@@ -1,0 +1,144 @@
+# The Yaml file contains the main parameters describing the challenge.
+# You can learn more about the possible settings here: # More options here: https://github.com/codalab/codabench/wiki/Yaml-Structure
+
+# Main settings
+version: 2 # this means that it is a Codabench bundle
+title: CYPHER 2026 - Scientific Machine-learning school competition
+description: Development of a data-driven reduced-order model of a reactive dynamical system.
+image: robot_logo.png
+registration_auto_approve: True  # do not require approval from admin to join the comp
+docker_image: 'lorenzopiu1/cypher-codabench-image:v4'
+
+# Documentation web pages
+terms: pages/terms.html
+pages:
+  - title: Overview
+    file: pages/overview.html
+  - title: Data
+    file: pages/data.html
+  - title: Submission
+    file: pages/submission.html
+  - title: Evaluation
+    file: pages/evaluation.html
+  - title: Baselines
+    file: pages/baselines.html
+  - title: Terms
+    file: pages/terms.html
+  - title: Organizing Committee
+    file: pages/organizing.html
+
+# Definition of the tasks
+tasks:
+- index: 0
+  name: Development Task
+  description: 'Development phase: create models and submit them or directly submit
+    results on validation and/or test data; feed-back are provided on the validation
+    set only.'
+  is_public: true
+  input_data: input_data
+  reference_data: reference_data/valid
+  scoring_program: scoring_program
+  ingestion_program: ingestion_program
+- index: 1
+  name: Final Task
+  description: 'Final phase: submissions from the previous phase are automatically
+    cloned and used to compute the final score. The results on the test set will be
+    revealed when the organizers make them available.'
+  is_public: true
+  input_data: input_data
+  reference_data: reference_data/test
+  scoring_program: scoring_program
+  ingestion_program: ingestion_program
+solutions: []
+
+# There are 2 phases: development phase and final phase
+# Each one is linked to a task
+phases:
+- index: 0
+  name: Development
+  description: 'Development phase: create models and submit them or directly submit
+    results on validation and/or test data; feed-back are provided on the validation
+    set only.'
+  start: 5-1-2025 # Month/Day/Year
+  end: 5-31-2025
+  max_submissions_per_day: 100
+  max_submissions: 500
+  execution_time_limit: 21600
+  tasks:
+  - 0
+  solutions: []
+- index: 1
+  name: Final
+  description: 'Final phase: submissions from the previous phase are automatically
+    cloned and used to compute the final score. The results on the test set will be
+    revealed when the organizers make them available.'
+  start: 6-1-2025 # Never ends
+  max_submissions_per_day: 100
+  max_submissions: 500
+  execution_time_limit: 21600
+  tasks:
+  - 1
+  solutions: []
+
+# Leaderboard
+leaderboards:
+- index: 0
+  title: Results
+  key: Results
+  columns:
+  - title: Overall score
+    key: score
+    index: 0
+    sorting: asc
+    computation: null
+    computation_indexes: null
+  - title: MSE
+    key: MSE
+    index: 1
+    sorting: asc
+    computation: null
+    computation_indexes: null
+    numeric_format: 5    
+  - title: Inference time [s*10^-6]
+    key: time_inference
+    index: 2
+    sorting: asc
+    computation: null
+    computation_indexes: null
+  - title: Training time [s]
+    key: time_training
+    index: 3
+    sorting: asc
+    computation: null
+    computation_indexes: null
+    
+leaderboards:
+- index: 1
+  title: Results
+  key: Results
+  columns:
+  - title: Overall score
+    key: score
+    index: 0
+    sorting: asc
+    computation: null
+    computation_indexes: null
+  - title: MSE
+    key: MSE
+    index: 1
+    sorting: asc
+    computation: null
+    computation_indexes: null
+    numeric_format: 5    
+  - title: Inference time [s*10^-6]
+    key: time_inference
+    index: 2
+    sorting: asc
+    computation: null
+    computation_indexes: null
+  - title: Training time [s]
+    key: time_training
+    index: 3
+    sorting: asc
+    computation: null
+    computation_indexes: null
