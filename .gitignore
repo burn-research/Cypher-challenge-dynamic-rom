@@ -207,3 +207,8 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python
+
+# all the "old" files:
+bundle/ingestion_program/data_io_old.py
+bundle/ingestion_program/ingestion_old.py
+bundle/ingestion_program/metadata_old
