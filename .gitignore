@@ -208,7 +208,20 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python
 
-# all the "old" files:
-bundle/ingestion_program/data_io_old.py
-bundle/ingestion_program/ingestion_old.py
-bundle/ingestion_program/metadata_old
+bundle/input_data/grid.npy
+bundle/input_data/test
+bundle/input_data/train 
+bundle/input_data/valid
+
+bundle/data_directory/grid.npy
+bundle/data_directory/test
+bundle/data_directory/train 
+bundle/data_directory/valid
+
+bundle/reference_data/test 
+bundle/reference_data/train 
+bundle/reference_data/valid
+
+sample_output_data
+
+

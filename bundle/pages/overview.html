@@ -1,21 +1,43 @@
-<h1>CYPHER challenge 2026: data-driven reduced-order modeling of reactive dynamical systems</h1>
+<h1>CYPHER 2026: data-driven reduced-order modeling of an externally forced laminar flame</h1>
 
 <h2>Introduction</h2>
-
 <p>
-Something about the need of surrogate models for combustion systems.
+High-fidelity CFD simulations of reacting flows are accurate but far too
+expensive to run in real time. Reduced-order models (ROMs) aim to reproduce
+the dynamics of these systems at a fraction of the computational cost, which
+is essential for real-time control, monitoring, and digital twins of
+combustion systems.
 </p>
-
 
 <h2>Challenge description</h2>
 <p>
-The goal is to build a reduced-order model of a dynamical reactive system.
-Participants will be provided with a dataset containing multiple snapshots of a 2D laminar flame with changing boundary conditions.
-The model provided by the participants should be able to predict the temporal evolution of the system given an initial condition and a time-varying inflow velocity.
-The results will be evaluated in terms of accuracy (RMSE), training and inference cost, and physical consistency.
+This hackathon is dedicated to building a data-driven reduced-order model of
+a dynamical combustion system: a 2D laminar flame subject to a time-varying
+inlet velocity.
+</p>
+<p>
+You are given two training simulations in which the inlet velocity follows a
+"sine sweep" (chirp) profile, ramping linearly in frequency from 1 Hz to
+80 Hz and back to 1 Hz, at two different forcing amplitudes.
+Your model will then be evaluated on <b>unseen</b> forcing signals it has
+never encountered during training: step changes and single-frequency sine
+excitations, at amplitudes and frequencies different from the training set.
+</p>
+<p>
+Given only the <b>initial flow state</b> and the <b>future forcing signal</b>
+(the inlet velocity profile is known in advance, exactly like a control
+input), your model must forecast the full spatio-temporal evolution of all
+11 flow fields over the whole time horizon.
+</p>
+<p>
+Submissions are evaluated in terms of forecasting accuracy (NRMSE),
+computational cost (training and inference time), and physical consistency
+of the predicted fields.
 </p>
 
-
-<h2>Github page</h2>
-More detailed information regarding the challenge, submission, and evaluation can be found at the official [Github page](https://github.com/burn-research/Cypher-challenge-2025)
-
+<h2>Working in teams</h2>
+<p>
+Participants work in teams of 3 to 4 people. The best-performing models in
+terms of accuracy, computational speed, and physical consistency will be
+rewarded.
+</p>

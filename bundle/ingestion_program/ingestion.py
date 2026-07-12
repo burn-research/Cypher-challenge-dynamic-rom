@@ -1,104 +1,111 @@
 #!/usr/bin/env python
-"""
-Ingestion program - CYPHER 2026 Data-driven Dynamic ROM challenge.
+# -*- coding: utf-8 -*-
 
-Adapted from the CYPHER turbulence-closure bundle (Lorenzo Piu, ULB, 2025),
-itself adapted from codalab/codabench official examples.
+# Ingestion program for the CYPHER 2026 dynamic ROM challenge.
+# Adapted from the CYPHER 2025 DNS challenge (Lorenzo Piu, ULB, May 2025),
+# itself adapted from the Codabench "iris" example bundle:
+# https://github.com/codalab/competition-examples/tree/master/codabench/iris
 
-Usage: python ingestion.py input_dir output_dir ingestion_program_dir submission_program_dir
+# Usage: python ingestion.py input_dir output_dir ingestion_program_dir submission_program_dir
 
-This program runs on the challenge platform to test your submission.
+# AS A PARTICIPANT, DO NOT MODIFY THIS CODE.
+# This is the "ingestion program" written by the organizers (Tommaso Baffetti, Alberto Procacci, ULB, 2026).
+# It runs on the challenge platform for every submission.
 
-AS A PARTICIPANT, DO NOT MODIFY THIS CODE.
+# ----------------------------------------------------------------------------
+# Input data structure (input_dir):
+#
+# input_data
+# ├── grid.npy                     shared uniform-grid coordinates (n_cells, 3)
+# ├── train
+# │   ├── sineSweep_A02
+# │   │   ├── state.npy            shape (n_features * n_cells, n_timesteps)
+# │   │   └── phi.npy              shape (n_timesteps,)
+# │   └── sineSweep_A04
+# │       ├── state.npy
+# │       └── phi.npy
+# ├── valid
+# │   ├── sineSweep_A02
+# │   │   ├── initial_state.npy    shape (n_features * n_cells, n_timesteps)
+# │   │   └── phi.npy              shape (n_timesteps,)
+# │   └── sineSweep_A04
+# │       ├── initial_state.npy    shape (n_features * n_cells, n_timesteps)
+# │       └── phi.npy              shape (n_timesteps,)
+# └── test
+#     ├── step_A03
+#     │   ├── initial_state.npy    shape (n_features * n_cells,)
+#     │   └── phi.npy              shape (n_timesteps,)
+#     ├── step_A05
+#     │   ├── initial_state.npy    shape (n_features * n_cells,)
+#     │   └── phi.npy              shape (n_timesteps,)
+#     ├── sine_f10_A03
+#     │   ├── initial_state.npy    shape (n_features * n_cells,)
+#     │   └── phi.npy              shape (n_timesteps,)
+#     ├── sine_f10_A05
+#     │   ├── initial_state.npy    shape (n_features * n_cells,)
+#     │   └── phi.npy              shape (n_timesteps,)
+#     ├── sine_f40_A03
+#     │   ├── initial_state.npy    shape (n_features * n_cells,)
+#     │   └── phi.npy              shape (n_timesteps,)
+#     └── sine_f40_A05
+#         ├── initial_state.npy    shape (n_features * n_cells,)
+#         └── phi.npy              shape (n_timesteps,)
 
-This is the "ingestion program" written by the organizers.
-This program also runs on the challenge platform to test your code.
+#
+# The train/ simulations contain the full ground-truth state. The valid/ and
+# test/ simulations contain ONLY the initial snapshot and the future forcing
+# signal: the ground truth is never exposed to the ingestion program, it
+# lives exclusively in reference_data/ and is read by the scoring program.
+#
+# Submitted model.py must define a class `model` with 3 methods:
+# 1. preprocess(self, data_folder) -> D
+#    data_folder is the path to the "train" folder above.
+# 2. fit(self, D) -> None
+#    trains the model in place using D.
+# 3. predict(self, test_data_folder) -> numpy array, shape (n_features * n_cells, n_timesteps)
+#    test_data_folder is the path to ONE valid/ or test/ simulation folder.
+# ----------------------------------------------------------------------------
 
-============================================================================
-Expected input_data structure:
+# ALL INFORMATION, SOFTWARE, DOCUMENTATION, AND DATA ARE PROVIDED "AS-IS".
+# THE ORGANIZERS DISCLAIM ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING,
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR ANY PARTICULAR PURPOSE.
 
-input_data/
-├── train/
-│   ├── SineSweep_f1_f80_A02/
-│   │   ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-│   │   └── phi.npy      # shape (T,), forcing signal value at each timestep
-│   └── SineSweep_f1_f80_A04/
-│       ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-│       └── phi.npy      # shape (T,), forcing signal value at each timestep
-│
-└── test/
-    ├── step_A03/
-    │   ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-    │   └── phi.npy      # shape (T,), forcing signal value at each timestep
-    ├── step_A05/
-    │   ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-    │   └── phi.npy      # shape (T,), forcing signal value at each timestep
-    ├── sine_f10_A03/
-    │   ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-    │   └── phi.npy      # shape (T,), forcing signal value at each timestep
-    ├── sine_f10_A05/
-    │   ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-    │   └── phi.npy      # shape (T,), forcing signal value at each timestep
-    ├── sine_f40_A03/
-    │   ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-    │   └── phi.npy      # shape (T,), forcing signal value at each timestep
-    └── sine_f40_A05/
-        ├── states.npy   # shape (T, ny, nx, n_features), full trajectory
-        └── phi.npy      # shape (T,), forcing signal value at each timestep
+# =========================== BEGIN OPTIONS ===================================
+verbose = True          # print progression messages
+debug_mode = 0           # >0 prints extra debug information
+save_previous_results = False   # keep previous local runs (useful when running locally)
+show_versions = False    # print installed library versions
 
-The feature axis order is fixed, see FEATURES below.
+max_time = 21600         # time budget for preprocess+fit, in seconds (6 hours)
+debug_time = 1000        # time budget used instead of max_time when debug_mode >= 1
 
-Submission:
-The ingestion code accepts submissions that contain an UNTRAINED model, that 
-can rely on the libraries Tensorflow, ScikitLearn, and pytorch, depending
-on the participants' preferences.
-
-Your model.py MUST define a class model() with three methods:
-- preprocess(self, data_folder): data_folder is the path to input_data/train.
-    It must loop over the case subfolders itself, load states.npy/phi.npy,
-    and return an object D to be consumed by fit().
-- fit(self, D): trains the model in place, no return value required.
-- predict(self, case_folder): case_folder is the path to ONE case folder
-    inside valid/ or test/ (e.g. input_data/valid/step_A0.3). It contains
-    init_state.npy and phi.npy. It must return the FULL predicted
-    trajectory, shape (T, ny, nx, n_features), with T = len(phi.npy).
-============================================================================
-"""
-
-import time
-overall_start = time.time()
-import os
-import sys
-import json
-from sys import argv, path
-import numpy as np
-
-FEATURES = ['p', 'U1', 'U3', 'rho', 'T', 'mix:Q', 'CH4', 'O2', 'H2O', 'CO2', 'OH']
-
-# =========================== BEGIN OPTIONS ==============================
-verbose = True                  # print progress messages
-debug_mode = 0                  # 0: normal run; >0 prints debug messages; 4: skip ingestion and run model.py directly
-show_versions = False           # print installed library versions
-save_previous_results = False   # if True, previous output_dir is renamed with a timestamp (useful locally)   
-
-max_time = 21600                # 6 hours, max training time budget (seconds)
-debug_time = 1000               # If debug >=1, you can decrease the maximum time (in sec) with the variable debug_time
-
-# Use default location for the input and output data:
-# If no arguments to run.py are provided, this is where the data will be found
-# and the results written to. Change the root_dir to your local directory.
 root_dir = "./"
 default_input_dir = root_dir + "input_data"
 default_output_dir = root_dir + "sample_output_data"
 default_program_dir = root_dir + "ingestion_program"
 default_submission_dir = root_dir + "sample_code_submission"
 default_data_dir = root_dir + "data_directory"
-# =========================== END OPTIONS ================================
+
+EVAL_PHASES = ["valid", "test"]   # both are always predicted; scoring picks the relevant one
+# ============================ END OPTIONS =====================================
 
 version = 1
 
+import time
+overall_start = time.time()
+import os
+import sys
+from sys import argv, path
+import datetime
+import numpy as np
+
+the_date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+
+
 if __name__ == "__main__" and debug_mode < 4:
 
+    # ---- I/O directories --------------------------------------------------
     if len(argv) == 1:
         input_dir = default_input_dir
         output_dir = default_output_dir
@@ -115,20 +122,19 @@ if __name__ == "__main__" and debug_mode < 4:
         print("Using output_dir: " + output_dir)
         print("Using program_dir: " + program_dir)
         print("Using submission_dir: " + submission_dir)
+        print('\nImporting modules...')
 
-    print('\nImporting modules...')
     path.append(program_dir)
     path.append(submission_dir)
     import data_io
-    from data_io import (vprint, show_version, cpdir, check_model_interface,
-                          rmdir, mkdir, process_training_time, time_limit)
+    from data_io import vprint, show_version, cpdir, rmdir, mkdir
+    from data_io import check_model_interface, process_training_time, time_limit
     from model import model
 
     if show_versions:
         show_version()
 
     if save_previous_results:
-        the_date = time.strftime("%y-%m-%d-%H-%M")
         data_io.mvdir(output_dir, output_dir + '_' + the_date)
     mkdir(output_dir)
 
@@ -136,14 +142,21 @@ if __name__ == "__main__" and debug_mode < 4:
     print('****** Ingestion program version ' + str(version) + ' ******')
     print('*******************************************\n')
 
-    time_budget = max_time if debug_mode < 1 else debug_time
-    vprint(verbose, f"Time available for training: {time_budget} seconds")
+    if debug_mode > 1:
+        print(f'Debugging mode: {debug_mode}')
+        data_io.show_dir('../')
+        print('')
 
+    time_budget = max_time if debug_mode < 1 else debug_time
+    vprint(verbose, f"Time available for preprocessing + training: {time_budget} seconds")
+
+    # ---- Copy input data locally to avoid touching the original folder ----
     vprint(verbose, "\nCopying input data directory...")
     if os.path.exists(default_data_dir):
         rmdir(default_data_dir)
     cpdir(input_dir, default_data_dir)
 
+    # ---- Initialize submitted model ---------------------------------------
     vprint(verbose, '\nInitializing model...')
     M = model()
     vprint(verbose, 'Model initialized successfully')
@@ -174,42 +187,47 @@ if __name__ == "__main__" and debug_mode < 4:
     with open(os.path.join(output_dir, "training_time.txt"), "w") as f:
         f.write(str(training_time))
 
-    # ======== Inference on the valid and test splits ========
-    for split in ['valid', 'test']:
-        split_dir = os.path.join(default_data_dir, split)
-        if not os.path.isdir(split_dir):
-            vprint(verbose, f'\nNo "{split}" folder found in input data, skipping.')
+    # ---- Inference on every validation and test simulation ----------------
+    vprint(verbose, '\n===================================')
+    vprint(verbose, '========== TESTING MODEL ==========')
+    vprint(verbose, '===================================\n')
+
+    for phase in EVAL_PHASES:
+        phase_input_dir = os.path.join(default_data_dir, phase)
+        if not os.path.isdir(phase_input_dir):
+            vprint(verbose, f'No "{phase}" folder found in input data, skipping.')
             continue
 
-        vprint(verbose, '\n===================================')
-        vprint(verbose, f'====== INFERENCE ON "{split.upper()}" SPLIT ======')
-        vprint(verbose, '===================================\n')
+        sim_names = sorted(
+            d for d in os.listdir(phase_input_dir)
+            if os.path.isdir(os.path.join(phase_input_dir, d))
+        )
 
-        case_names = sorted(d for d in os.listdir(split_dir)
-                             if os.path.isdir(os.path.join(split_dir, d)))
+        for sim_name in sim_names:
+            sim_dir = os.path.join(phase_input_dir, sim_name)
+            vprint(verbose, f'\n[{phase}] Forecasting simulation "{sim_name}"...')
 
-        pred_out_dir = os.path.join(output_dir, 'predictions', split)
-        mkdir(pred_out_dir)
-
-        inference_times = {}
-        for case_name in case_names:
-            case_dir = os.path.join(split_dir, case_name)
-            vprint(verbose, f'Running inference on case "{case_name}"...')
             t_start = time.time()
-            pred = np.asarray(M.predict(case_dir))
+            state_pred = M.predict(sim_dir)
             t_end = time.time()
-            inference_times[case_name] = t_end - t_start
+            inference_time = t_end - t_start
 
-            np.save(os.path.join(pred_out_dir, f'{case_name}.npy'), pred)
-            tt, unit = process_training_time(inference_times[case_name])
-            vprint(verbose, f'  -> done in {tt:.2f} {unit}, output shape {pred.shape}')
+            state_pred = np.asarray(state_pred, dtype=np.float32)
 
-        with open(os.path.join(output_dir, f"inference_time_{split}.json"), "w") as f:
-            json.dump(inference_times, f, indent=2)
+            out_sim_dir = os.path.join(output_dir, phase, sim_name)
+            mkdir(out_sim_dir)
+            np.save(os.path.join(out_sim_dir, 'state_pred.npy'), state_pred)
+            with open(os.path.join(out_sim_dir, 'inference_time.txt'), 'w') as f:
+                f.write(str(inference_time))
+
+            tt, unit = process_training_time(inference_time)
+            vprint(verbose,
+                   f'  -> forecast shape {state_pred.shape}, done in {tt:.2f} {unit}')
 
     overall_time_spent = time.time() - overall_start
+
     vprint(verbose, "\n[+] Done")
-    vprint(verbose, "[+] Overall time spent %5.2f sec" % overall_time_spent +
-           " :: Overall time budget for training %5.2f sec" % time_budget)
+    vprint(verbose, "[+] Overall time spent %5.2f sec " % overall_time_spent +
+           ":: Overall time budget for training %5.2f sec" % time_budget)
 
     exit(0)

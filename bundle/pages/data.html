@@ -1,2 +1,86 @@
-<h1>2D Laminar flame data</h1>
-<p> ... </p>
+<h1>Dataset: externally forced 2D laminar flame</h1>
+
+<p>
+The data comes from CFD simulations of a 2D axisymmetric laminar flame with a
+pulsed/forced inlet velocity. All fields are provided on a common uniform 2D
+grid, already resampled from the original unstructured CFD mesh.
+</p>
+
+<h2>Flow variables</h2>
+<p>At every grid cell and time step, the following 11 variables are available:</p>
+<ul>
+  <li><code>p</code> &mdash; pressure</li>
+  <li><code>U1</code>, <code>U3</code> &mdash; velocity components</li>
+  <li><code>rho</code> &mdash; density</li>
+  <li><code>T</code> &mdash; temperature</li>
+  <li><code>mix:Q</code> &mdash; heat release rate</li>
+  <li><code>CH4</code>, <code>O2</code>, <code>H2O</code>, <code>CO2</code>, <code>OH</code> &mdash; species mass fractions</li>
+</ul>
+
+<h2>The forcing signal &phi;(t)</h2>
+<p>
+The inlet velocity profile is modulated in time by a scalar forcing signal
+&phi;(t). The bulk inlet velocity at time t is <code>U(t) = U_base &middot;
+&phi;(t)</code>. &phi;(t) is provided to you explicitly, alongside the flow
+state, as an additional input at every time step: it is exactly the
+information a controller would know in advance, since it defines the
+boundary condition being imposed on the system.
+</p>
+
+<h2>File format</h2>
+<p>Every simulation is stored as a folder containing:</p>
+<ul>
+  <li><code>state.npy</code> &mdash; array of shape <code>(n_features * n_cells, n_timesteps)</code>,
+  the flattened flow state at every time step (features stacked in the order
+  listed above, each block of <code>n_cells</code> rows corresponding to
+  one feature on the uniform grid).</li>
+  <li><code>phi.npy</code> &mdash; array of shape <code>(n_timesteps,)</code>,
+  the forcing signal value at every time step.</li>
+</ul>
+<p>
+A single shared <code>grid.npy</code> file (shape <code>(n_cells, 3)</code>,
+columns x, y, z) gives the coordinates of the uniform grid cells, in case you
+want to exploit the spatial structure of the domain (e.g. convolutional
+architectures). The time step is constant and equal to <code>dt = 5e-4 s</code>
+in every simulation.
+</p>
+
+<h2>Training data</h2>
+<p>Two simulations, both a frequency "sine sweep" (chirp) from 1 Hz to 80 Hz
+and back to 1 Hz over 2 s (4000 time steps), at two forcing amplitudes:</p>
+<ul>
+  <li><code>train/sweep_A0.2</code> &mdash; amplitude A = 0.2</li>
+  <li><code>train/sweep_A0.4</code> &mdash; amplitude A = 0.4</li>
+</ul>
+
+<h2>Validation data (Development phase feedback)</h2>
+<p>
+You are given, for each validation case, only the <b>initial snapshot</b>
+of the state and the <b>full future forcing trajectory</b> &phi;(t) &mdash;
+never the ground-truth evolution of the state. Your model must forecast the
+rest of the trajectory from that single snapshot.
+</p>
+<ul>
+  <li><code>valid/step_A0.3</code> &mdash; step change, amplitude A = 0.3</li>
+  <li><code>valid/sine10_A0.3</code> &mdash; 10 Hz sine, amplitude A = 0.3</li>
+</ul>
+
+<h2>Final test data (hidden)</h2>
+<p>
+Same principle as the validation set (initial snapshot + forcing signal
+only), used exclusively for the Final phase score. You never get direct
+access to this data.
+</p>
+<ul>
+  <li>Step change, amplitude A = 0.5</li>
+  <li>10 Hz sine, amplitude A = 0.5</li>
+  <li>40 Hz sine, amplitude A = 0.3</li>
+  <li>40 Hz sine, amplitude A = 0.5</li>
+</ul>
+
+<h2>What you will never see</h2>
+<p>
+The ground-truth trajectories of the validation and test simulations, and
+any data beyond what is described above, are never shared with participants
+and never available for local testing.
+</p>

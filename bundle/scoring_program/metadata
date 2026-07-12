@@ -1,2 +1,2 @@
 command: python $program/score.py $input $output
-description: Compute scores for the competition
+description: Compute the NRMSE and overall score for the competition.
