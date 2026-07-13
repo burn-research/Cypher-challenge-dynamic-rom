@@ -13,7 +13,7 @@ registration_auto_approve: True
 # NOTE: this image already contains numpy/scipy/scikit-learn/pytorch/tensorflow,
 # inherited from the previous CYPHER challenge. See the "Docker image" section
 # of the organizer README before changing it.
-docker_image: 'lorenzopiu1/cypher-codabench-image:v4'
+docker_image: 'tommasobaffetti/cypher2026-hackaton-image:v1'
 
 # ---------------------------------------------------------------------------
 # Documentation web pages

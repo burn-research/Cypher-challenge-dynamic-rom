@@ -222,6 +222,9 @@ bundle/reference_data/test
 bundle/reference_data/train 
 bundle/reference_data/valid
 
-sample_output_data
+bundle/sample_output_data
+
+organizer_scripts/RUN.sh
+organizer_scripts/logs
 
 
