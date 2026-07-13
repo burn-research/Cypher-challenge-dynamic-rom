@@ -1,1 +1,1 @@
-{"n_features": 11, "features": ["p", "U1", "U3", "rho", "T", "mix:Q", "CH4", "O2", "H2O", "CO2", "OH"], "n_cells": 16384}
+{"n_features": 11, "features": ["p", "U1", "U3", "rho", "T", "mix:Q", "CH4", "O2", "H2O", "CO2", "OH"], "n_cells": 400}

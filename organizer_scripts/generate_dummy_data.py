@@ -24,6 +24,7 @@ N_CELLS = 400          # tiny grid, just for a fast local smoke test
 N_COLS = N_FEATURES * N_CELLS
 
 TRAIN_SIMS = {"dummy_sineSweep_A02": 60, "dummy_sineSweep_A04": 60}
+VALID_SIMS = {"dummy_step_A03": 30, "dummy_sine_f40_A05": 30}
 TEST_SIMS = {"dummy_step_A03": 30, "dummy_sine_f10_A03": 30,
              "dummy_step_A05": 30, "dummy_sine_f10_A05": 30,
              "dummy_sine_f40_A03": 30, "dummy_sine_f40_A05": 30}
@@ -61,7 +62,7 @@ def main():
         np.save(os.path.join(d, "state.npy"), state)
         np.save(os.path.join(d, "phi.npy"), phi)
 
-    for split, sims in [("test", TEST_SIMS)]:
+    for split, sims in [("valid", VALID_SIMS), ("test", TEST_SIMS)]:
         for name, nt in sims.items():
             in_d = os.path.join(input_data_dir, split, name)
             os.makedirs(in_d, exist_ok=True)
