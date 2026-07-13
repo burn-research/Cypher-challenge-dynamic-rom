@@ -1,240 +1,68 @@
-# CYPHER 2026 hackathon -- Codabench bundle (organizer package)
+# Data challenge on reduced-order modeling for dynamical reacting flows
+Challenge on reduced-order modeling for dynamical reacting flows organised within the context of the [CYPHER COST Action](https://cypher.ulb.be/)
+<p align="center">
+  <img src="images/Challenge_overview_pic.png" alt="Challenge Overview" width="90%">
+</p>
 
-Data challenge on reduced-order modeling (ROM) for an externally forced 2D
-laminar flames, organized within the CYPHER COST Action. System
-identification task: forecast the full flow-state evolution given an
-initial snapshot and a known time-varying forcing signal.
+## Overview
+Combustion systems play a vital role in transportation, energy production, and residential heating. Nonetheless, current combustion systems heavily rely on fossil fuels, whose burning process is now acknowledged as a source of greenhouse gases and consequently responsible for climate change.
+While completely dismantling our reliance on combustion is unfeasible for the so-called 'hard-to-abate industries' [[1](https://doi.org/10.1016/j.resconrec.2024.107796 )], existing combustion processes can significantly reduce their CO2 emissions. In this context, the CYPHER COST action is dedicated to advancing the understanding of Renewable Synthetic Fuels (RSFs) combustion, high-fidelity simulations, hybrid physics-based data-driven models, and self-updating digital twins. 
 
-This package is the **organizer's working copy**. It contains both the
-Codabench bundle itself (`bundle/`) and organizer-only tooling that must
-never be shared with participants (`organizer_scripts/`).
+Reduced-order models are a powerful tool to develop digital replicas of physical systems, especially in the context of reacting flows, where numerical simulations are expensive and direct measurements are limited. Having access to a real-time digital model of a combustion system would allow us to control the combustion process much more precisely, increasing efficiency and reducing pollutant emissions. 
 
-```
-.
-├── bundle/                     <- THIS is what gets zipped and uploaded to Codabench
-│   ├── competition.yaml
-│   ├── pages/                  competition web pages (overview, data, submission, ...)
-│   ├── ingestion_program/      runs a participant's model.py on the server
-│   ├── scoring_program/        computes NRMSE + score from the ingestion output
-│   ├── input_data/             training data + unlabeled valid/test inputs -- EMPTY until you run prepare_data.py
-│   └── reference_data/         hidden ground truth used only by scoring -- EMPTY until you run prepare_data.py, NEVER share this
-├── sample_code_submission/     example participant submission (persistence baseline)
-├── sample_code_submission.zip  the same, zipped, ready to upload as the "starting kit"
-└── organizer_scripts/          organizer-only tools, NOT part of the bundle
-    ├── prepare_data.py         raw .npy/.vtu -> bundle/input_data + bundle/reference_data
-    └── generate_dummy_data.py  generates a tiny fake dataset for local smoke-testing
-```
+## Scope of the challenge
+This challenge aims to establish a benchmark for reduced-order modeling of dynamical combustion systems. This first effort to provide a standard dataset and evaluation metric can be leveraged to foster consistency, facilitate model comparison, and accelerate progress in developing robust, generalizable reduced-order models for reactive flows. The public nature of the challenge, combined with its implementation on the Codabench https://doi.org/10.1016/j.patter.2022.100543 platform, ensures broad accessibility and promotes widespread dissemination within the research community.
 
----
+Participants will be asked to submit a Python code that defines the reduced-order model, which will be trained after submission with the available data. All the models submitted will be evaluated on out-of-sample data. 
 
-## 0. Concepts you asked about
+All the technical information can be found at https://cypher.ulb.be/data-challenge/
 
-**What is a "bundle"?**
-A bundle is just the specific folder structure Codabench expects to define a
-competition: a `competition.yaml` describing phases/leaderboard, HTML pages,
-an `ingestion_program` (runs on the server for every submission), a
-`scoring_program` (computes the score from the ingestion output), and the
-data folders (`input_data`, `reference_data`). When you "create a
-competition" on Codabench, you zip the **contents** of `bundle/` (not the
-`bundle` folder itself, i.e. `competition.yaml` must be at the root of the
-zip) and upload that single zip file. That's it -- a bundle is nothing more
-than this zip.
+## Submission guidelines
+Participants can join the challenge through the link INSERT CORRECT LINK
+The link will lead to the following page:
 
-**What is a "docker image" and why do you need one?**
-Codabench doesn't run your ingestion/scoring code on its own bare server: it
-spins up a Docker container (a lightweight, self-contained virtual Linux
-environment with a fixed set of pre-installed software) for every
-submission, runs your `ingestion_program` and `scoring_program` inside it,
-then throws the container away. The `docker_image:` field in
-`competition.yaml` tells Codabench *which* pre-built environment to use --
-i.e. which Python version and which libraries (numpy, torch, tensorflow,
-scikit-learn, ...) are already available inside the container before your
-code even starts running.
+<p align="center">
+  <img src="images/Submission_2.png" alt="homepage" width="90%">
+</p>
 
-You do **not** need to build your own image right now: this bundle reuses
-Lorenzo's existing image (`lorenzopiu1/cypher-codabench-image:v4`), which
-already contains PyTorch, TensorFlow and scikit-learn -- everything a
-participant needs, and everything our own `ingestion_program`/
-`scoring_program` need (which is just numpy). Building a custom image is
-only necessary if you need a Python package that isn't already inside it;
-see section 4 below for how to do that if/when it happens.
+After clicking on the highlighted "My Submissions" section, you will be able to submit your model:
 
-**Where do the "input_data" and "reference_data" folders come from, and who
-sees what?**
-- `input_data` is what the ingestion program (i.e. the participant's
-  submitted code) is allowed to read: the training simulations (state +
-  forcing signal), and for validation/test simulations, ONLY the initial
-  snapshot and the future forcing signal -- never the true future state.
-- `reference_data` is the hidden ground truth (the full state trajectories
-  for validation/test), read only by `scoring_program`, which runs
-  separately from ingestion and whose output the participant never sees the
-  internals of. This is where your "test data participants must never see"
-  physically lives, and it is exactly what you must never commit to a
-  public repository or hand to anyone outside the organizing team.
+<p align="center">
+  <img src="images/submission.png" alt="homepage" width="90%">
+</p>
 
----
+An example file for submission is the 'sample_code_submission.zip' in the present GitHub folder. The [uncompressed folder](sample_code_submission) allows for exploring the structure of the Python code to be submitted. The only mandatory file that must be present at the moment of submission is the 'model.py' file. Every other kind of module is allowed in the submission folder, but additional data or pretrained models are not allowed in the present context. The organizers of the challenge reserve the right to check the submission files to verify that those restrictions are respected.
 
-## 1. Preparing the data (your "passo 2")
+The model.py script must define a class, named 'model', an instance of which will be called from the ingestion program. The class can leverage tensorflow, pytorch, or scikit_learn to inherit, based on the user's preferences. The object must have 3 fundamental methods, which will be called when the file is submitted:
+- ```preprocess(self, data_folder):``` takes as input the relative path to the [training data folder](bundle/input_data/train) and processes the data. The method must return an object (in the following referred to as D) that will be handled by the ```fit()``` method to train the model. The preprocessing can include every operation on the data in the folder that is useful to obtain better predictive capabilities.
+- ```fit(self, D):``` trains the model based on the processed data contained in the object D. The method does not return outputs, but can update the object attributes (e.g., the weights of the neural networks).
+- ```predict(self, valid_data_folder):``` takes as input the relative path to the [validation data folder](bundle/input_data/valid/). Another trivial but important consideration regards the data scaling, which should be handled in the same way both during the training and testing process. The scaling parameters must not be updated during inference.
+The present method must return the sub-filter turbulent diffusivity of the progress variable, alpha_t, that will be used to evaluate the model. More details on the model form can be found in the document on the [Cypher website](https://cypher.ulb.be/data-challenge/).
 
-Your raw data (`.npy` DataMatrix + `.vtu` grid, one folder per simulation)
-never goes into the bundle directly -- it must first be converted into the
-standardized format the ingestion/scoring programs expect. That's what
-`organizer_scripts/prepare_data.py` does, using the exact resampling logic
-you already had, generalized to loop over every simulation:
+## After submission
+After submitting the file, the platform will start processing the data. Loading the app may take a few minutes. After the backend is ready and the docker image is loaded, you should see an output similar to the one represented below. Successive submissions without refreshing the page should be faster than the initial one.
 
-1. Open `organizer_scripts/prepare_data.py` and edit the `RAW_SIMULATIONS`
-   list at the top: for each of your 2 training + 6 test/valid simulations,
-   set the path to the raw `.npy` and `.vtu` files, the split
-   (`"train"` / `"valid"` / `"test"`), the signal type
-   (`"sweep"` / `"step"` / `"sine"`) and its parameters (A, f). The
-   forcing signal &phi;(t) is computed analytically from these parameters
-   using the exact formulas in the OpenFoam U_code -- you do
-   not need a separate BC dataset.
-2. Decide the train/valid/test split. Right now the script assumes:
-   - `train`: the 2 sine-sweep simulations (A=0.2, A=0.4) -- given to
-     participants in full (state + phi).
-   - `valid` (Development-phase feedback): `step_A0.3` and `sine10_A0.3`
-     -- participants only ever see the initial snapshot + phi.
-   - `test` (Final-phase, hidden): `step_A0.5`, `sine10_A0.5`,
-     `sine40_A0.3`, `sine40_A0.5`.
-   This is a reasonable default (one step-type + one sine-type case for
-   dev-phase feedback, the harder/larger-amplitude and higher-frequency
-   cases held out for the final score) but it's your call -- move
-   simulations between `valid`/`test` in the list if you'd rather split
-   them differently.
-3. `pip install pyvista` (only needed for this script, not for the bundle
-   itself), then run:
-   ```
-   cd organizer_scripts
-   python3 prepare_data.py
-   ```
-   This fills in `bundle/input_data/` and `bundle/reference_data/`.
+<p align="center">
+  <img src="images/after_submission.png" alt="after submission" width="90%">
+</p>
 
-**Important:** `bundle/reference_data/` (and the `test/` part of
-`bundle/input_data/`) must stay private. Do not push a populated version of
-these two folders to a public GitHub repo. Keep the populated `bundle/`
-folder locally / in a private location, and only zip+upload it directly to
-Codabench.
+The window in red will output the statements from the backend. The model submitted can contain print statements that will be shown as output, which can be useful for debugging purposes. After the ingestion and scoring programs are done, you can click on the green highlighted button to download the outputs of the training, and check the log files with the output and errors, if any.
 
----
+When multiple submissions are presented, the best one (lower scoring) can manually be selected to be added to the leaderboard:
+<p align="center">
+  <img src="images/add_to_leaderboard.png" alt="leaderboard" width="90%">
+</p>
 
-## 2. Running everything locally first (your "passo 3")
+After being added to the leaderboard, the scoring should be visible in the results section:
+<p align="center">
+  <img src="images/results.png" alt="results" width="90%">
+</p>
 
-Before touching Codabench at all, you can (and should) run the exact same
-programs Codabench will run, on your own machine. This is the fastest way
-to catch bugs.
 
-**A. Quick smoke test with fake data (no real data needed, seconds to run):**
-```
-cd organizer_scripts
-python3 generate_dummy_data.py     # fills bundle/input_data + bundle/reference_data with tiny fake arrays
-cd ../bundle
-python3 ingestion_program/ingestion.py input_data sample_output_data ingestion_program ../sample_code_submission
-```
-This runs the example baseline submission exactly like Codabench would,
-producing `bundle/sample_output_data/`. Then simulate what the scoring
-program receives (Codabench packages ingestion output as `res/` and the
-hidden ground truth as `ref/` inside one folder):
-```
-mkdir -p /tmp/score_input/res /tmp/score_input/ref
-cp -r sample_output_data/* /tmp/score_input/res/
-cp -r reference_data/valid/* /tmp/score_input/ref/     # or reference_data/test for the final phase
-python3 scoring_program/score.py /tmp/score_input /tmp/score_output
-cat /tmp/score_output/scores.txt
-```
-If this runs without errors and prints a `scores.txt` with `score`, `NRMSE`,
-`time_inference`, `time_training`, the whole pipeline (ingestion + scoring +
-the model interface) is wired correctly. I ran exactly this before handing
-you the zip, so it works as shipped.
+## Organizing committee
 
-**B. Same thing with your real data:** once you've run `prepare_data.py`
-(step 1), repeat the same two commands (skip `generate_dummy_data.py`) --
-now you're testing the actual challenge with the actual baseline model, and
-with any model you or a colleague writes against the same `model.py`
-interface, before ever uploading anything.
+<p align="center">
+  <img src="images/organizing_committee.png" alt="organizing committee" width="90%">
+</p>
 
-**C. Testing a participant-like submission:** put any `model.py` (+
-optional helper files) with the required 3-method interface in its own
-folder and pass that folder as the last argument to `ingestion.py` instead
-of `../sample_code_submission`.
 
----
-
-## 3. Building the sample_code_submission.zip
-
-Whenever you change `sample_code_submission/`, re-zip it (this is the
-"starting kit" participants download from the Files tab):
-```
-cd sample_code_submission
-zip -r ../sample_code_submission.zip .
-```
-
----
-
-## 4. Uploading to Codabench
-
-1. Create a Codabench account / log in, go to "My Competitions" -> "Create
-   Competition" -> "Upload".
-2. Zip the **contents** of `bundle/` (after running `prepare_data.py`), so
-   that `competition.yaml` sits at the root of the zip -- not
-   `bundle/competition.yaml` one level down. E.g.:
-   ```
-   cd bundle
-   zip -r ../cypher_2026_bundle.zip . -x "*.DS_Store"
-   ```
-3. Upload `cypher_2026_bundle.zip` on the competition creation page.
-4. Also upload `sample_code_submission.zip` on the "Files" tab so
-   participants can download the starting kit.
-5. Before opening registration: submit `sample_code_submission.zip` yourself
-   as a test participant, on both phases, and check the leaderboard shows
-   sensible NRMSE/score values. This exercises the real Docker image on the
-   real Codabench backend, which is the one thing you can't fully test
-   locally.
-6. Fill in the placeholders left in the bundle: `pages/organizing.html`
-   (organizing committee), the `start`/`end` dates in `competition.yaml`
-   (currently placeholders), and re-check `pages/terms.html` matches the
-   actual hackathon rules (team size, submission limits, etc.).
-
-Reference: Codabench's own docs/wiki -- https://github.com/codalab/codabench/wiki
-
----
-
-## 5. About the Docker image (only if you need extra packages)
-
-You don't need to do this yet. If, once the hackathon is closer, you find
-participants need a package that isn't in `lorenzopiu1/cypher-codabench-image:v4`,
-the general recipe is:
-1. Write a `Dockerfile`:
-   ```dockerfile
-   FROM lorenzopiu1/cypher-codabench-image:v4
-   RUN pip install --no-cache-dir <your-extra-package>
-   ```
-2. Build and push it to a Docker Hub account you control:
-   ```
-   docker build -t <your-dockerhub-username>/cypher-2026-image:v1 .
-   docker push <your-dockerhub-username>/cypher-2026-image:v1
-   ```
-3. Update `docker_image:` in `competition.yaml` to point to your new image,
-   re-zip the bundle, and re-upload / update the competition.
-
-You will need Docker Desktop (or `docker` CLI) and a free Docker Hub
-account for this -- but again, only if/when the current image turns out to
-be missing something.
-
----
-
-## 6. What changed vs. the CYPHER 2025 (DNS) bundle you started from
-
-The previous bundle (Lorenzo Piu's) was a *different* challenge: a-priori
-prediction of a sub-filter turbulent diffusivity (`alpha_t`) from static,
-already-labeled 3D DNS snapshots, using the `aPrioriDNS` library for I/O and
-a single train/valid/test simulation each. This one is a genuinely
-different task -- autoregressive forecasting of an 11-field 2D flow state
-under a known time-varying forcing, evaluated over multiple held-out
-forcing signals -- so essentially every script was rewritten:
-`ingestion_program`, `scoring_program`, `model.py`/`data_manager.py`, the
-metric (MSE of a sub-filter flux -> multi-simulation, multi-feature NRMSE
-of the whole forecast), the data layout, and all HTML pages. Only the
-overall bundle *shape* (which files Codabench expects, and where) and the
-general 3-method `model` interface convention were kept, since those are
-Codabench requirements, not challenge-specific choices.
