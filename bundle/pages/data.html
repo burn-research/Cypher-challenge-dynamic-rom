@@ -1,9 +1,10 @@
 <h1>Dataset: externally forced 2D laminar flame</h1>
 
 <p>
-The data comes from CFD simulations of a 2D axisymmetric laminar flame with a
-pulsed/forced inlet velocity. All fields are provided on a common uniform 2D
-grid, already resampled from the original unstructured CFD mesh.
+The data comes from CFD simulations of 2D transient laminar coflow diffusion
+flames burning a CH4 and N2 mixture in air, with pulsed/forced inlet velocity.
+All fields are provided on a common uniform 2D grid, already resampled from the
+original unstructured CFD mesh.
 </p>
 
 <h2>Flow variables</h2>
@@ -61,8 +62,8 @@ never the ground-truth evolution of the state. Your model must forecast the
 rest of the trajectory from that single snapshot.
 </p>
 <ul>
-  <li><code>valid/step_A0.3</code> &mdash; step change, amplitude A = 0.3</li>
-  <li><code>valid/sine10_A0.3</code> &mdash; 10 Hz sine, amplitude A = 0.3</li>
+  <li><code>valid/step_A03</code> &mdash; step change, amplitude A = 0.3</li>
+  <li><code>valid/sine_f40_A05</code> &mdash; 40 Hz sine, amplitude A = 0.5</li>
 </ul>
 
 <h2>Final test data (hidden)</h2>
@@ -72,7 +73,9 @@ only), used exclusively for the Final phase score. You never get direct
 access to this data.
 </p>
 <ul>
+  <li>Step change, amplitude A = 0.3</li>
   <li>Step change, amplitude A = 0.5</li>
+  <li>10 Hz sine, amplitude A = 0.3</li>
   <li>10 Hz sine, amplitude A = 0.5</li>
   <li>40 Hz sine, amplitude A = 0.3</li>
   <li>40 Hz sine, amplitude A = 0.5</li>

@@ -5,13 +5,9 @@
 # Main settings
 # ---------------------------------------------------------------------------
 version: 2
-title: CYPHER 2026 - Data-driven Reduced-Order Modeling of an Externally Forced Laminar Flame
+title: CYPHER challenge 2026: data-driven reduced-order modeling of reactive dynamical systems
 description: >
-  System identification / reduced-order modeling challenge on a 2D laminar
-  flame subject to a time-varying inlet velocity (sinusoidal, step, chirp).
-  Participants train a model on forced simulations and must forecast the
-  full spatio-temporal evolution of the flame given only an initial snapshot
-  and the future forcing signal.
+  Development of a data-driven reduced-order model of a reactive dynamical system.
 image: robot_logo.png
 registration_auto_approve: True
 # NOTE: this image already contains numpy/scipy/scikit-learn/pytorch/tensorflow,
@@ -81,9 +77,9 @@ phases:
   name: Development
   description: 'Development phase: train and submit your model. Feedback is
     given on the validation simulations only.'
-  start: 9-1-2026   # Month-Day-Year -- UPDATE before publishing
-  end: 9-2-2026     # UPDATE before publishing
-  max_submissions_per_day: 20
+  start: 9-10-2026   # Month-Day-Year -- UPDATE before publishing
+  end: 9-12-2026     # UPDATE before publishing
+  max_submissions_per_day: 5
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours
   tasks:
@@ -93,8 +89,8 @@ phases:
   name: Final
   description: 'Final phase: your last Development submission is
     automatically cloned and scored on the held-out test simulations.'
-  start: 9-2-2026   # UPDATE before publishing
-  max_submissions_per_day: 20
+  start: 9-12-2026   # UPDATE before publishing
+  max_submissions_per_day: 5
   max_submissions: 100
   execution_time_limit: 21600
   tasks:
