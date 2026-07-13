@@ -16,7 +16,7 @@ never be shared with participants (`organizer_scripts/`).
 │   ├── pages/                  competition web pages (overview, data, submission, ...)
 │   ├── ingestion_program/      runs a participant's model.py on the server
 │   ├── scoring_program/        computes NRMSE + score from the ingestion output
-│   ├── input_data/             training data + (label-free) valid/test inputs -- EMPTY until you run prepare_data.py
+│   ├── input_data/             training data + unlabeled valid/test inputs -- EMPTY until you run prepare_data.py
 │   └── reference_data/         hidden ground truth used only by scoring -- EMPTY until you run prepare_data.py, NEVER share this
 ├── sample_code_submission/     example participant submission (persistence baseline)
 ├── sample_code_submission.zip  the same, zipped, ready to upload as the "starting kit"

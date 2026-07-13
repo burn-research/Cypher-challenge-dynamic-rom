@@ -77,8 +77,8 @@ phases:
   name: Development
   description: 'Development phase: train and submit your model. Feedback is
     given on the validation simulations only.'
-  start: 9-10-2026   # Month-Day-Year -- UPDATE before publishing
-  end: 9-12-2026     # UPDATE before publishing
+  start: 9-10-2026 00:00:00 # Month-Day-Year -- UPDATE before publishing
+  end: 9-12-2026 18:00:00 # UPDATE before publishing
   max_submissions_per_day: 5
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours
