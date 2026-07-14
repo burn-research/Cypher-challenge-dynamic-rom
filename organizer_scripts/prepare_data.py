@@ -88,7 +88,7 @@ X_MIN, X_MAX, DX = 0.0, 0.025, 0.025 / 64
 Z_MIN, Z_MAX, DZ = 0.0, 0.1, 0.1 / (64 * 4)
 
 BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "..", "bundle")
-
+# BUNDLE_DIR = os.path.join(os.environ["WORKDIR"], "bundle")
 
 # =============================================================================
 # 2) FORCING SIGNAL phi(t) -- translated from the OpenFOAM U_code snippets
@@ -186,6 +186,54 @@ def resample_simulation(raw_data_path, raw_grid_path, xyz_samples):
 
     return Data_samples
 
+def npy_shape(path):
+    """
+    It returns the shape of a .npy file saved on disk WITHOUT loading it
+    all into RAM (mmap_mode='r' reads only the header). Returns None if the
+    file does not exist or is unreadable/corrupted (e.g. interrupted write).
+    """
+    if not os.path.exists(path):
+        return None
+    try:
+        arr = np.load(path, mmap_mode='r')
+        return arr.shape
+    except Exception as e:
+        print(f"  [WARNING] {path} exists but is not readable ({e}); it will be reconstructed.")
+        return None
+ 
+ 
+def outputs_ready(sim, n_cells, input_data_dir, reference_data_dir):
+    """
+    True : IF all expected output files for this simulation already exist on disk
+           AND have the correct shape -> we can skip resampling for this sim.
+    False: otherwise.
+    
+    """
+    split = sim["split"]
+    sim_input_dir = os.path.join(input_data_dir, split, sim["name"])
+ 
+    # nt: number of time steps in the simulation. We read it from the raw .npy
+    # file header, because the resampling step does not change nt (it only
+    # changes the number of cells).
+    raw_shape = npy_shape(sim["raw_data_path"])
+    if raw_shape is None:
+        # we cannot read the raw .npy file -> we cannot verify the output shapes, better to (re)process
+        return False
+    nt = raw_shape[1]
+ 
+    if split == "train":
+        state_shape = npy_shape(os.path.join(sim_input_dir, "state.npy"))
+        phi_shape = npy_shape(os.path.join(sim_input_dir, "phi.npy"))
+        return (state_shape == (N_FEATURES * n_cells, nt)
+                and phi_shape == (nt,))
+    else:
+        initial_shape = npy_shape(os.path.join(sim_input_dir, "initial_state.npy"))
+        phi_shape = npy_shape(os.path.join(sim_input_dir, "phi.npy"))
+        ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
+        full_shape = npy_shape(os.path.join(ref_sim_dir, "state_full.npy"))
+        return (initial_shape == (N_FEATURES * n_cells,)
+                and phi_shape == (nt,)
+                and full_shape == (N_FEATURES * n_cells, nt))
 
 # =============================================================================
 # 4) MAIN
@@ -212,6 +260,11 @@ def main():
 
     for sim in RAW_SIMULATIONS:
         print(f"\n=== Processing {sim['name']} ({sim['split']}) ===")
+
+        if outputs_ready(sim, n_cells, input_data_dir, reference_data_dir):
+            print("  -> output already exists and has correct shape, skip.")
+            continue
+        
         state = resample_simulation(sim["raw_data_path"], sim["raw_grid_path"],
                                      xyz_samples)
         nt = state.shape[1]

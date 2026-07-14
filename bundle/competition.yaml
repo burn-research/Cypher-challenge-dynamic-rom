@@ -78,8 +78,8 @@ phases:
   description: 'Development phase: train and submit your model. Feedback is
     given on the validation simulations only.'
   start: 9-10-2026 00:00:00 # Month-Day-Year -- UPDATE before publishing
-  end: 9-12-2026 18:00:00 # UPDATE before publishing
-  max_submissions_per_day: 5
+  end: 9-12-2026 03:00:00 # UPDATE before publishing
+  max_submissions_per_day: 20
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours
   tasks:
@@ -90,9 +90,9 @@ phases:
   description: 'Final phase: your last Development submission is
     automatically cloned and scored on the held-out test simulations.'
   start: 9-12-2026   # UPDATE before publishing
-  max_submissions_per_day: 5
+  max_submissions_per_day: 20
   max_submissions: 100
-  execution_time_limit: 21600
+  execution_time_limit: 21600   # 6 hours
   tasks:
   - 1
   solutions: []

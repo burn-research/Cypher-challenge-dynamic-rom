@@ -24,10 +24,10 @@ N_CELLS = 400          # tiny grid, just for a fast local smoke test
 N_COLS = N_FEATURES * N_CELLS
 
 TRAIN_SIMS = {"dummy_sineSweep_A02": 60, "dummy_sineSweep_A04": 60}
-VALID_SIMS = {"dummy_step_A03": 30, "dummy_sine_f40_A05": 30}
-TEST_SIMS = {"dummy_step_A03": 30, "dummy_sine_f10_A03": 30,
-             "dummy_step_A05": 30, "dummy_sine_f10_A05": 30,
-             "dummy_sine_f40_A03": 30, "dummy_sine_f40_A05": 30}
+VALID_SIMS = {"dummy_step_A03": 30,      "dummy_sine_f40_A05": 30}
+TEST_SIMS  = {"dummy_step_A03": 30,      "dummy_sine_f10_A03": 30,
+              "dummy_step_A05": 30,      "dummy_sine_f10_A05": 30,
+              "dummy_sine_f40_A03": 30,  "dummy_sine_f40_A05": 30}
 
 def fake_trajectory(nt):
     """Smooth-ish random trajectory, just for shape/plumbing testing."""
