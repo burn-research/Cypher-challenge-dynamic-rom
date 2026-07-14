@@ -208,6 +208,9 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python
 
+# -------------------------------------------------------------------------------------------------------------
+# START TOMMASO GITIGNORE:
+
 bundle/input_data/grid.npy
 bundle/input_data/test
 bundle/input_data/train 

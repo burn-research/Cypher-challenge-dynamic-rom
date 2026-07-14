@@ -184,8 +184,6 @@ def resample_simulation(raw_data_path, raw_grid_path, xyz_samples):
             Data_samples[f_idx * n_cells_s:(f_idx + 1) * n_cells_s, t] = sampled
         print(f'  feature {feat} resampled ({f_idx + 1}/{N_FEATURES})')
 
-    # (N_FEATURES * n_cells, nt) -> (nt, N_FEATURES * n_cells): time as axis 0,
-    # to match the model interface used in the bundle.
     return Data_samples
 
 

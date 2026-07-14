@@ -59,13 +59,13 @@ def compute_nrmse_field(state_true, state_pred, n_features,
             f"ground truth {state_true.shape}."
         )
 
-    n_cols, n_timesteps = state_true.shape
-    if n_cols % n_features != 0:
+    n_rows, n_timesteps = state_true.shape
+    if n_rows % n_features != 0:
         raise ValueError(
-            f"Number of rows ({n_cols}) is not divisible by "
+            f"Number of rows ({n_rows}) is not divisible by "
             f"n_features ({n_features})."
         )
-    n_cells = n_cols // n_features
+    n_cells = n_rows // n_features
 
     # reshape to (n_features, n_cells, n_timesteps)
     true_r = state_true.reshape(n_features, n_cells, n_timesteps)

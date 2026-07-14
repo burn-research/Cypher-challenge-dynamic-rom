@@ -22,14 +22,14 @@
 # │   │   ├── state.npy            shape (n_features * n_cells, n_timesteps)
 # │   │   └── phi.npy              shape (n_timesteps,)
 # │   └── sineSweep_A04
-# │       ├── state.npy
-# │       └── phi.npy
+# │       ├── state.npy            shape (n_features * n_cells, n_timesteps)
+# │       └── phi.npy              shape (n_timesteps,)
 # ├── valid
 # │   ├── sineSweep_A02
-# │   │   ├── initial_state.npy    shape (n_features * n_cells, n_timesteps)
+# │   │   ├── initial_state.npy    shape (n_features * n_cells,)
 # │   │   └── phi.npy              shape (n_timesteps,)
 # │   └── sineSweep_A04
-# │       ├── initial_state.npy    shape (n_features * n_cells, n_timesteps)
+# │       ├── initial_state.npy    shape (n_features * n_cells,)
 # │       └── phi.npy              shape (n_timesteps,)
 # └── test
 #     ├── step_A03
