@@ -212,11 +212,15 @@ pyrightconfig.json
 # START TOMMASO GITIGNORE:
 
 bundle/input_data/grid.npy
+bundle/input_data/grid*.vtu
+bundle/input_data/xyz.npy
 bundle/input_data/test
 bundle/input_data/train 
 bundle/input_data/valid
 
 bundle/data_directory/grid.npy
+bundle/data_directory/grid.vtu
+bundle/data_directory/xyz.npy
 bundle/data_directory/test
 bundle/data_directory/train 
 bundle/data_directory/valid

@@ -249,7 +249,7 @@ def main():
     #     simulations, as in your current RAW_SIMULATIONS) ---
     raw_grid_path = RAW_SIMULATIONS[0]["raw_grid_path"]
     xyz_path = os.path.join(input_data_dir, "xyz.npy")
-    grid_dest = os.path.join(input_data_dir, os.path.basename(raw_grid_path))
+    grid_dest = os.path.join(input_data_dir, "grid.vtu")
 
     if not os.path.exists(xyz_path) or not os.path.exists(grid_dest):
         grid = pv.read(raw_grid_path)
