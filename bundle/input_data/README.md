@@ -5,7 +5,7 @@ raw simulation dumps (see the top-level README.md, section "Preparing the
 data"). After running it, this folder will contain:
 
     input_data/
-      grid.npy
+      xyz.npy, grid.vtu
       train/<sim_name>/state.npy, phi.npy
       valid/<sim_name>/initial_state.npy, phi.npy
       test/<sim_name>/initial_state.npy, phi.npy
