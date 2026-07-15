@@ -84,8 +84,8 @@ FEATURES = ['p', 'U1', 'U3', 'rho', 'T', 'mix:Q', 'CH4', 'O2', 'H2O', 'CO2', 'OH
 N_FEATURES = len(FEATURES)
 
 # Uniform resampling grid (edit to match your domain / resolution needs)
-X_MIN, X_MAX, DX = 0.0, 0.025, 0.025 / 64
-Z_MIN, Z_MAX, DZ = 0.0, 0.1, 0.1 / (64 * 4)
+# X_MIN, X_MAX, DX = 0.0, 0.025, 0.025 / 64
+# Z_MIN, Z_MAX, DZ = 0.0, 0.1, 0.1 / (64 * 4)
 
 BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "..", "bundle")
 # BUNDLE_DIR = os.path.join(os.environ["WORKDIR"], "bundle")
@@ -143,6 +143,7 @@ def compute_phi(signal, nt, dt, A, f=None, t0=0.0):
         raise ValueError(f"Unknown signal type '{signal}'")
 
 
+"""
 # =============================================================================
 # 3) RESAMPLING onto the shared uniform grid
 # =============================================================================
@@ -158,14 +159,14 @@ def build_uniform_grid():
 
 
 def resample_simulation(raw_data_path, raw_grid_path, xyz_samples):
-    """
+    
     Resample one raw simulation (unstructured grid) onto the shared uniform
     grid. Mirrors the manual pipeline already used by the CYPHER team.
 
     Returns
     -------
     state : ndarray, shape (n_timesteps, N_FEATURES * n_cells_uniform)
-    """
+    
     DataMatrix = np.load(raw_data_path)
     grid = pv.read(raw_grid_path)
     xyz = grid.cell_centers().points
@@ -185,6 +186,7 @@ def resample_simulation(raw_data_path, raw_grid_path, xyz_samples):
         print(f'  feature {feat} resampled ({f_idx + 1}/{N_FEATURES})')
 
     return Data_samples
+"""
 
 def npy_shape(path):
     """
@@ -201,8 +203,7 @@ def npy_shape(path):
         print(f"  [WARNING] {path} exists but is not readable ({e}); it will be reconstructed.")
         return None
  
- 
-def outputs_ready(sim, n_cells, input_data_dir, reference_data_dir):
+def outputs_ready(sim, input_data_dir, reference_data_dir):
     """
     True : IF all expected output files for this simulation already exist on disk
            AND have the correct shape -> we can skip resampling for this sim.
@@ -224,30 +225,42 @@ def outputs_ready(sim, n_cells, input_data_dir, reference_data_dir):
     if split == "train":
         state_shape = npy_shape(os.path.join(sim_input_dir, "state.npy"))
         phi_shape = npy_shape(os.path.join(sim_input_dir, "phi.npy"))
-        return (state_shape == (N_FEATURES * n_cells, nt)
-                and phi_shape == (nt,))
+        return state_shape == raw_shape and phi_shape == (nt,)
     else:
         initial_shape = npy_shape(os.path.join(sim_input_dir, "initial_state.npy"))
         phi_shape = npy_shape(os.path.join(sim_input_dir, "phi.npy"))
         ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
         full_shape = npy_shape(os.path.join(ref_sim_dir, "state_full.npy"))
-        return (initial_shape == (N_FEATURES * n_cells,)
+        return (initial_shape == (raw_shape[0],)
                 and phi_shape == (nt,)
-                and full_shape == (N_FEATURES * n_cells, nt))
+                and full_shape == raw_shape)
 
 # =============================================================================
 # 4) MAIN
 # =============================================================================
 
 def main():
-    xyz_samples = build_uniform_grid()
-    n_cells = xyz_samples.shape[0]
-    print(f'Uniform grid: {n_cells} cells')
-
     input_data_dir = os.path.join(BUNDLE_DIR, "input_data")
     reference_data_dir = os.path.join(BUNDLE_DIR, "reference_data")
+    os.makedirs(input_data_dir, exist_ok=True)
 
-    np.save(os.path.join(input_data_dir, "grid.npy"), xyz_samples)
+    # --- grid + cells positions: shared by all simulations, so we can compute 
+    #     it once and save it to disk (assuming the same .vtu file for all
+    #     simulations, as in your current RAW_SIMULATIONS) ---
+    raw_grid_path = RAW_SIMULATIONS[0]["raw_grid_path"]
+    xyz_path = os.path.join(input_data_dir, "xyz.npy")
+    grid_dest = os.path.join(input_data_dir, os.path.basename(raw_grid_path))
+
+    if not os.path.exists(xyz_path) or not os.path.exists(grid_dest):
+        grid = pv.read(raw_grid_path)
+        xyz = grid.cell_centers().points   # row i = position (x,y,z) of cell i
+        np.save(xyz_path, xyz.astype(np.float32))
+        shutil.copy2(raw_grid_path, grid_dest)   # copy also the raw .vtu
+        n_cells = xyz.shape[0]
+        print(f"Grid: {n_cells} cells (raw, unstructured, no resampling)")
+    else:
+        n_cells = np.load(xyz_path, mmap_mode='r').shape[0]
+        print(f"Grid already present: {n_cells} cells")
 
     meta = {"n_features": N_FEATURES, "features": FEATURES, "n_cells": n_cells}
     for phase in ["valid", "test"]:
@@ -261,13 +274,12 @@ def main():
     for sim in RAW_SIMULATIONS:
         print(f"\n=== Processing {sim['name']} ({sim['split']}) ===")
 
-        if outputs_ready(sim, n_cells, input_data_dir, reference_data_dir):
+        if outputs_ready(sim, input_data_dir, reference_data_dir):
             print("  -> output already exists and has correct shape, skip.")
             continue
-        
-        state = resample_simulation(sim["raw_data_path"], sim["raw_grid_path"],
-                                     xyz_samples)
-        nt = state.shape[1]
+
+        raw_shape = npy_shape(sim["raw_data_path"])
+        nt = raw_shape[1]
         phi = compute_phi(sim["signal"], nt, sim["dt"], sim["A"],
                            f=sim.get("f"), t0=sim.get("t0", 0.0))
 
@@ -276,21 +288,21 @@ def main():
         os.makedirs(sim_input_dir, exist_ok=True)
 
         if split == "train":
-            np.save(os.path.join(sim_input_dir, "state.npy"), state.astype(np.float32))
+            # pass-through: no resampling, copy directly the raw file
+            np.save(os.path.join(sim_input_dir, "state.npy"),np.load(sim["raw_data_path"]).astype(np.float32))
             np.save(os.path.join(sim_input_dir, "phi.npy"), phi.astype(np.float32))
         else:
             # participants only ever see the initial snapshot + full phi
-            np.save(os.path.join(sim_input_dir, "initial_state.npy"),
-                    state[:, 0].astype(np.float32))
+            DataMatrix = np.load(sim["raw_data_path"], mmap_mode='r')  # do not load all into RAM
+            np.save(os.path.join(sim_input_dir, "initial_state.npy"), np.array(DataMatrix[:, 0], dtype=np.float32))
             np.save(os.path.join(sim_input_dir, "phi.npy"), phi.astype(np.float32))
 
             # ground truth goes ONLY into reference_data, never into input_data
             ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
             os.makedirs(ref_sim_dir, exist_ok=True)
-            np.save(os.path.join(ref_sim_dir, "state_full.npy"),
-                    state.astype(np.float32))
+            np.save(os.path.join(ref_sim_dir, "state_full.npy"), np.load(sim["raw_data_path"]).astype(np.float32))
 
-        print(f"  -> state {state.shape}, phi {phi.shape}, split={split}")
+        print(f"  -> raw shape {raw_shape}, phi {phi.shape}, split={split}")
 
     print("\nDone. You can now zip bundle/ (input_data and reference_data "
           "included) and upload it to Codabench, or use it for local testing.")
