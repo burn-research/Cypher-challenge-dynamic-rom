@@ -43,7 +43,7 @@ def main():
 
     xyz = np.zeros((N_CELLS, 3), dtype=np.float32)
     xyz[:, 0] = np.linspace(0, 0.025, N_CELLS)
-    np.save(os.path.join(input_data_dir, "grid.npy"), xyz)
+    np.save(os.path.join(input_data_dir, "xyz.npy"), xyz)
 
     meta = {"n_features": N_FEATURES, "features": FEATURES, "n_cells": N_CELLS}
     for phase in ["valid", "test"]:

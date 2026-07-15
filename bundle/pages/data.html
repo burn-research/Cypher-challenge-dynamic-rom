@@ -3,8 +3,8 @@
 <p>
 The data comes from CFD simulations of 2D transient laminar coflow diffusion
 flames burning a CH4 and N2 mixture in air, with pulsed/forced inlet velocity.
-All fields are provided on a common uniform 2D grid, already resampled from the
-original unstructured CFD mesh.
+All fields are provided on a common unstructered grid.vtu (pyvista format) and
+a corresponding xyz.npy file with the coordinates of the grid cells.
 </p>
 
 <h2>Flow variables</h2>
@@ -34,14 +34,15 @@ boundary condition being imposed on the system.
   <li><code>state.npy</code> &mdash; array of shape <code>(n_features * n_cells, n_timesteps)</code>,
   the flattened flow state at every time step (features stacked in the order
   listed above, each block of <code>n_cells</code> rows corresponding to
-  one feature on the uniform grid).</li>
+  one feature, in the cell order given by grid.vtu/xyz.npy).</li>
   <li><code>phi.npy</code> &mdash; array of shape <code>(n_timesteps,)</code>,
   the forcing signal value at every time step.</li>
 </ul>
 <p>
-A single shared <code>grid.npy</code> file (shape <code>(n_cells, 3)</code>,
-columns x, y, z) gives the coordinates of the uniform grid cells, in case you
-want to exploit the spatial structure of the domain (e.g. convolutional
+Two shared files describe the spatial mesh: <code>xyz.npy</code> (shape
+<code>(n_cells, 3)</code>, columns x, y, z — cell-center coordinates) and
+<code>grid.vtu</code> (the raw unstructured mesh, readable with pyvista),
+in case you want to exploit the spatial structure of the domain (e.g. convolutional
 architectures). The time step is constant and equal to <code>dt = 5e-4 s</code>
 in every simulation.
 </p>

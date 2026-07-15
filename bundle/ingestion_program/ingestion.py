@@ -16,7 +16,8 @@
 # Input data structure (input_dir):
 #
 # input_data
-# ├── grid.npy                     shared uniform-grid coordinates (n_cells, 3)
+# ├── grid.vtu                     shared unstructured grid, pyvista format
+# ├── xyz.npy                      shared cells coordinates matrix (n_cells, 3)
 # ├── train
 # │   ├── sineSweep_A02
 # │   │   ├── state.npy            shape (n_features * n_cells, n_timesteps)

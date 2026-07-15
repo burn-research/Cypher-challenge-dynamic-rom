@@ -7,7 +7,7 @@ NOT give it to participants: it is what turns your raw CFD dumps (.npy +
 standardized files expected by bundle/ingestion_program and
 bundle/scoring_program:
 
-  bundle/input_data/grid.npy
+  bundle/input_data/xyz.npy, grid.vtu
   bundle/input_data/train/<sim_name>/state.npy, phi.npy
   bundle/input_data/valid/<sim_name>/initial_state.npy, phi.npy
   bundle/input_data/test/<sim_name>/initial_state.npy, phi.npy
@@ -83,12 +83,7 @@ RAW_SIMULATIONS = [
 FEATURES = ['p', 'U1', 'U3', 'rho', 'T', 'mix:Q', 'CH4', 'O2', 'H2O', 'CO2', 'OH']
 N_FEATURES = len(FEATURES)
 
-# Uniform resampling grid (edit to match your domain / resolution needs)
-# X_MIN, X_MAX, DX = 0.0, 0.025, 0.025 / 64
-# Z_MIN, Z_MAX, DZ = 0.0, 0.1, 0.1 / (64 * 4)
-
 BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "..", "bundle")
-# BUNDLE_DIR = os.path.join(os.environ["WORKDIR"], "bundle")
 
 # =============================================================================
 # 2) FORCING SIGNAL phi(t) -- translated from the OpenFOAM U_code snippets
@@ -141,52 +136,6 @@ def compute_phi(signal, nt, dt, A, f=None, t0=0.0):
         return phi_sweep(t, A, t0=t0, t1=t0 + 1.0, t2=t0 + 2.0)
     else:
         raise ValueError(f"Unknown signal type '{signal}'")
-
-
-"""
-# =============================================================================
-# 3) RESAMPLING onto the shared uniform grid
-# =============================================================================
-
-def build_uniform_grid():
-    x_samples = np.arange(X_MIN, X_MAX, DX)
-    z_samples = np.arange(Z_MIN, Z_MAX, DZ)
-    xg, zg = np.meshgrid(x_samples, z_samples)
-    xyz_samples = np.zeros((xg.size, 3))
-    xyz_samples[:, 0] = xg.flatten()
-    xyz_samples[:, 2] = zg.flatten()
-    return xyz_samples
-
-
-def resample_simulation(raw_data_path, raw_grid_path, xyz_samples):
-    
-    Resample one raw simulation (unstructured grid) onto the shared uniform
-    grid. Mirrors the manual pipeline already used by the CYPHER team.
-
-    Returns
-    -------
-    state : ndarray, shape (n_timesteps, N_FEATURES * n_cells_uniform)
-    
-    DataMatrix = np.load(raw_data_path)
-    grid = pv.read(raw_grid_path)
-    xyz = grid.cell_centers().points
-    n_cells_raw = xyz.shape[0]
-    nt = DataMatrix.shape[1]
-
-    samples = pv.PolyData(xyz_samples)
-    n_cells_s = xyz_samples.shape[0]
-
-    Data_samples = np.zeros((N_FEATURES * n_cells_s, nt), dtype=np.float32)
-    for f_idx, feat in enumerate(FEATURES):
-        for t in range(nt):
-            field = DataMatrix[f_idx * n_cells_raw:(f_idx + 1) * n_cells_raw, t]
-            grid['f'] = field
-            sampled = samples.sample(grid)['f']
-            Data_samples[f_idx * n_cells_s:(f_idx + 1) * n_cells_s, t] = sampled
-        print(f'  feature {feat} resampled ({f_idx + 1}/{N_FEATURES})')
-
-    return Data_samples
-"""
 
 def npy_shape(path):
     """
