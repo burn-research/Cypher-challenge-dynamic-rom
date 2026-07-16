@@ -238,5 +238,6 @@ bundle/sample_output_data
 organizer_scripts/RUN.sh
 organizer_scripts/logs
 
-cypher_2026_bundle_try1.zip
+cypher_2026_bundle_try*.zip
+cypher_2026_dummy_try*.zip
 
