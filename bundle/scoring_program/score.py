@@ -125,7 +125,7 @@ if __name__ == "__main__":
         ref_sim_dir = os.path.join(reference_data_dir, sim_name)
         res_sim_dir = os.path.join(results_dir, phase, sim_name)
 
-        state_true = np.load(os.path.join(ref_sim_dir, 'state_full.npy'))
+        state_true = np.load(os.path.join(ref_sim_dir, "state_full.npz"))["data"]
 
         pred_path = os.path.join(res_sim_dir, 'state_pred.npy')
         if not os.path.exists(pred_path):
@@ -144,7 +144,7 @@ if __name__ == "__main__":
                 f"Simulation '{sim_name}': prediction has "
                 f"{state_pred.shape[1]} time steps, expected "
                 f"{state_true.shape[1]}. Your predict() method must return "
-                "a forecast covering the whole horizon given by phi.npy."
+                "a forecast covering the whole horizon given by phi.npz."
             )
 
         nrmse_sim, _, _ = compute_nrmse_field(state_true, state_pred, n_features)

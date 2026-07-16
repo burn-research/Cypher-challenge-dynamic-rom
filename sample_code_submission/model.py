@@ -23,10 +23,17 @@ To build a real model you will typically want to:
   3. In predict(): starting from initial_state, roll your model forward
      autoregressively, feeding it the known future phi(t) values one step
      at a time, until you have produced a forecast for every time step
-     given in phi.npy.
+     given in phi.npz.
 """
 
 import numpy as np
+import os
+import pyvista
+import matplotlib
+import torch
+import tensorflow
+import sklearn
+import pandas
 
 from utils import list_training_simulations, load_simulation
 
@@ -70,17 +77,17 @@ class model:
         ----------
         test_data_folder : str
             Path to ONE validation/test simulation folder, containing
-            initial_state.npy (shape (n_features * n_cells,)) and
-            phi.npy (shape (n_timesteps,), the full known forcing signal).
+            initial_state.npz (shape (n_features * n_cells,)) and
+            phi.npz (shape (n_timesteps,), the full known forcing signal).
 
         Returns
         -------
         state_pred : ndarray, shape (n_features * n_cells, n_timesteps)
             Forecast of the full flow state at every time step. Column 0 must
-            equal initial_state.npy.
+            equal initial_state.npz.
         """
-        initial_state = np.load(f"{test_data_folder}/initial_state.npy")
-        phi = np.load(f"{test_data_folder}/phi.npy")
+        initial_state = np.load(f"{test_data_folder}/initial_state.npz")['data']
+        phi = np.load(f"{test_data_folder}/phi.npz")['data']
 
         n_timesteps = phi.shape[0]
         state_pred = np.tile(initial_state.reshape(-1, 1), (1, n_timesteps))

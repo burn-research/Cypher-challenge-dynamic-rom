@@ -151,6 +151,24 @@ def npy_shape(path):
     except Exception as e:
         print(f"  [WARNING] {path} exists but is not readable ({e}); it will be reconstructed.")
         return None
+
+def npz_shape(path, key='data'):
+    """
+    Array `key` shape inside a .npz file, reading only the header (~128B),
+    without decompressing the data. Returns None if the file/key does not exist or is corrupted."""
+    if not os.path.exists(path):
+        return None
+    try:
+        import zipfile
+        from numpy.lib.format import read_magic, read_array_header_1_0, read_array_header_2_0
+        with zipfile.ZipFile(path) as zf, zf.open(f"{key}.npy") as f:
+            version = read_magic(f)
+            shape, _, _ = (read_array_header_1_0(f) if version == (1, 0)
+                            else read_array_header_2_0(f))
+            return shape
+    except Exception as e:
+        print(f"  [WARNING] {path} exists but is not readable ({e}); it will be reconstructed.")
+        return None
  
 def outputs_ready(sim, input_data_dir, reference_data_dir):
     """
@@ -172,14 +190,14 @@ def outputs_ready(sim, input_data_dir, reference_data_dir):
     nt = raw_shape[1]
  
     if split == "train":
-        state_shape = npy_shape(os.path.join(sim_input_dir, "state.npy"))
-        phi_shape = npy_shape(os.path.join(sim_input_dir, "phi.npy"))
+        state_shape = npz_shape(os.path.join(sim_input_dir, "state.npz"))
+        phi_shape = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
         return state_shape == raw_shape and phi_shape == (nt,)
     else:
-        initial_shape = npy_shape(os.path.join(sim_input_dir, "initial_state.npy"))
-        phi_shape = npy_shape(os.path.join(sim_input_dir, "phi.npy"))
+        initial_shape = npz_shape(os.path.join(sim_input_dir, "initial_state.npz"))
+        phi_shape = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
         ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
-        full_shape = npy_shape(os.path.join(ref_sim_dir, "state_full.npy"))
+        full_shape = npz_shape(os.path.join(ref_sim_dir, "state_full.npz"))
         return (initial_shape == (raw_shape[0],)
                 and phi_shape == (nt,)
                 and full_shape == raw_shape)
@@ -197,18 +215,18 @@ def main():
     #     it once and save it to disk (assuming the same .vtu file for all
     #     simulations, as in your current RAW_SIMULATIONS) ---
     raw_grid_path = RAW_SIMULATIONS[0]["raw_grid_path"]
-    xyz_path = os.path.join(input_data_dir, "xyz.npy")
+    xyz_path = os.path.join(input_data_dir, "xyz.npz")
     grid_dest = os.path.join(input_data_dir, "grid.vtu")
 
     if not os.path.exists(xyz_path) or not os.path.exists(grid_dest):
         grid = pv.read(raw_grid_path)
         xyz = grid.cell_centers().points   # row i = position (x,y,z) of cell i
-        np.save(xyz_path, xyz.astype(np.float32))
+        np.savez_compressed(xyz_path, data=xyz.astype(np.float32))
         shutil.copy2(raw_grid_path, grid_dest)   # copy also the raw .vtu
         n_cells = xyz.shape[0]
         print(f"Grid: {n_cells} cells (raw, unstructured, no resampling)")
     else:
-        n_cells = np.load(xyz_path, mmap_mode='r').shape[0]
+        n_cells = npz_shape(xyz_path)[0]
         print(f"Grid already present: {n_cells} cells")
 
     meta = {"n_features": N_FEATURES, "features": FEATURES, "n_cells": n_cells}
@@ -238,18 +256,18 @@ def main():
 
         if split == "train":
             # pass-through: no resampling, copy directly the raw file
-            np.save(os.path.join(sim_input_dir, "state.npy"),np.load(sim["raw_data_path"]).astype(np.float32))
-            np.save(os.path.join(sim_input_dir, "phi.npy"), phi.astype(np.float32))
+            np.savez_compressed(os.path.join(sim_input_dir, "state.npz"), data=np.load(sim["raw_data_path"]).astype(np.float32))
+            np.savez_compressed(os.path.join(sim_input_dir, "phi.npz"), data=phi.astype(np.float32))
         else:
             # participants only ever see the initial snapshot + full phi
             DataMatrix = np.load(sim["raw_data_path"], mmap_mode='r')  # do not load all into RAM
-            np.save(os.path.join(sim_input_dir, "initial_state.npy"), np.array(DataMatrix[:, 0], dtype=np.float32))
-            np.save(os.path.join(sim_input_dir, "phi.npy"), phi.astype(np.float32))
+            np.savez_compressed(os.path.join(sim_input_dir, "initial_state.npz"), data=np.array(DataMatrix[:, 0], dtype=np.float32))
+            np.savez_compressed(os.path.join(sim_input_dir, "phi.npz"), data=phi.astype(np.float32))
 
             # ground truth goes ONLY into reference_data, never into input_data
             ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
             os.makedirs(ref_sim_dir, exist_ok=True)
-            np.save(os.path.join(ref_sim_dir, "state_full.npy"), np.load(sim["raw_data_path"]).astype(np.float32))
+            np.savez_compressed(os.path.join(ref_sim_dir, "state_full.npz"), data=np.load(sim["raw_data_path"]).astype(np.float32))
 
         print(f"  -> raw shape {raw_shape}, phi {phi.shape}, split={split}")
 

@@ -5,7 +5,7 @@
 # Main settings
 # ---------------------------------------------------------------------------
 version: 2
-title: CYPHER challenge 2026: data-driven reduced-order modeling of reactive dynamical systems
+title: "CYPHER challenge 2026: data-driven reduced-order modeling of reactive dynamical systems"
 description: >
   Development of a data-driven reduced-order model of a reactive dynamical system.
 image: robot_logo.png
@@ -89,7 +89,7 @@ phases:
   name: Final
   description: 'Final phase: your last Development submission is
     automatically cloned and scored on the held-out test simulations.'
-  start: 9-12-2026   # UPDATE before publishing
+  start: 9-12-2026 03:00:01 # UPDATE before publishing
   max_submissions_per_day: 20
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours

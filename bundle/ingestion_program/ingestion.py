@@ -17,40 +17,40 @@
 #
 # input_data
 # ├── grid.vtu                     shared unstructured grid, pyvista format
-# ├── xyz.npy                      shared cells coordinates matrix (n_cells, 3)
+# ├── xyz.npz                      shared cells coordinates matrix (n_cells, 3)
 # ├── train
 # │   ├── sineSweep_A02
-# │   │   ├── state.npy            shape (n_features * n_cells, n_timesteps)
-# │   │   └── phi.npy              shape (n_timesteps,)
+# │   │   ├── state.npz            shape (n_features * n_cells, n_timesteps)
+# │   │   └── phi.npz              shape (n_timesteps,)
 # │   └── sineSweep_A04
-# │       ├── state.npy            shape (n_features * n_cells, n_timesteps)
-# │       └── phi.npy              shape (n_timesteps,)
+# │       ├── state.npz            shape (n_features * n_cells, n_timesteps)
+# │       └── phi.npz              shape (n_timesteps,)
 # ├── valid
 # │   ├── sineSweep_A02
-# │   │   ├── initial_state.npy    shape (n_features * n_cells,)
-# │   │   └── phi.npy              shape (n_timesteps,)
+# │   │   ├── initial_state.npz    shape (n_features * n_cells,)
+# │   │   └── phi.npz              shape (n_timesteps,)
 # │   └── sineSweep_A04
-# │       ├── initial_state.npy    shape (n_features * n_cells,)
-# │       └── phi.npy              shape (n_timesteps,)
+# │       ├── initial_state.npz    shape (n_features * n_cells,)
+# │       └── phi.npz              shape (n_timesteps,)
 # └── test
 #     ├── step_A03
-#     │   ├── initial_state.npy    shape (n_features * n_cells,)
-#     │   └── phi.npy              shape (n_timesteps,)
+#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   └── phi.npz              shape (n_timesteps,)
 #     ├── step_A05
-#     │   ├── initial_state.npy    shape (n_features * n_cells,)
-#     │   └── phi.npy              shape (n_timesteps,)
+#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   └── phi.npz              shape (n_timesteps,)
 #     ├── sine_f10_A03
-#     │   ├── initial_state.npy    shape (n_features * n_cells,)
-#     │   └── phi.npy              shape (n_timesteps,)
+#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   └── phi.npz              shape (n_timesteps,)
 #     ├── sine_f10_A05
-#     │   ├── initial_state.npy    shape (n_features * n_cells,)
-#     │   └── phi.npy              shape (n_timesteps,)
+#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   └── phi.npz              shape (n_timesteps,)
 #     ├── sine_f40_A03
-#     │   ├── initial_state.npy    shape (n_features * n_cells,)
-#     │   └── phi.npy              shape (n_timesteps,)
+#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   └── phi.npz              shape (n_timesteps,)
 #     └── sine_f40_A05
-#         ├── initial_state.npy    shape (n_features * n_cells,)
-#         └── phi.npy              shape (n_timesteps,)
+#         ├── initial_state.npz    shape (n_features * n_cells,)
+#         └── phi.npz              shape (n_timesteps,)
 
 #
 # The train/ simulations contain the full ground-truth state. The valid/ and

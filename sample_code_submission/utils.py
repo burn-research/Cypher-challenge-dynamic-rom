@@ -45,15 +45,15 @@ def load_simulation(sim_folder):
     Parameters
     ----------
     sim_folder : str
-        Path to a simulation folder containing state.npy and phi.npy.
+        Path to a simulation folder containing state.npz and phi.npz.
 
     Returns
     -------
     state : ndarray, shape (n_features * n_cells, n_timesteps)
     phi   : ndarray, shape (n_timesteps,)
     """
-    state = np.load(os.path.join(sim_folder, 'state.npy'))
-    phi = np.load(os.path.join(sim_folder, 'phi.npy'))
+    state = np.load(os.path.join(sim_folder, 'state.npz'))['data']
+    phi = np.load(os.path.join(sim_folder, 'phi.npz'))['data']
     return state, phi
 
 
@@ -67,8 +67,8 @@ def load_test_simulation(sim_folder):
     initial_state : ndarray, shape (n_features * n_cells,)
     phi           : ndarray, shape (n_timesteps,) -- known future forcing signal
     """
-    initial_state = np.load(os.path.join(sim_folder, 'initial_state.npy'))
-    phi = np.load(os.path.join(sim_folder, 'phi.npy'))
+    initial_state = np.load(os.path.join(sim_folder, 'initial_state.npz'))['data']
+    phi = np.load(os.path.join(sim_folder, 'phi.npz'))['data']
     return initial_state, phi
 
 
