@@ -5,15 +5,18 @@
 # Main settings
 # ---------------------------------------------------------------------------
 version: 2
-title: "CYPHER challenge 2026: data-driven reduced-order modeling of reactive dynamical systems"
+title: "CYPHER 2026: Hackathon on Reduced-Order Modeling for Advanced Combustion Systems"
 description: >
   Development of a data-driven reduced-order model of a reactive dynamical system.
-image: robot_logo.png
+image: images/robot_logo.png
 registration_auto_approve: True
 # NOTE: this image already contains numpy/scipy/scikit-learn/pytorch/tensorflow,
 # inherited from the previous CYPHER challenge. See the "Docker image" section
 # of the organizer README before changing it.
 docker_image: 'tommasobaffetti/cypher2026-hackaton-image:v1'
+contact_email: tommaso.baffetti@ulb.be
+make_input_data_available: True
+make_programs_available: True
 
 # ---------------------------------------------------------------------------
 # Documentation web pages
@@ -77,8 +80,8 @@ phases:
   name: Development
   description: 'Development phase: train and submit your model. Feedback is
     given on the validation simulations only.'
-  start: 2026-09-10 00:00:00 # YYYY-MM-DD -- UPDATE before publishing
-  end: 2026-09-12 03:00:00 # YYYY-MM-DD   -- UPDATE before publishing
+  start: 09-10-2026 00:00:00 # MM-DD-YYYY -- UPDATE before publishing
+  end: 09-12-2026 03:00:00 # MM-DD-YYYY   -- UPDATE before publishing
   max_submissions_per_day: 20
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours
@@ -89,7 +92,7 @@ phases:
   name: Final
   description: 'Final phase: your last Development submission is
     automatically cloned and scored on the held-out test simulations.'
-  start: 2026-09-12 03:00:01 # YYYY-MM-DD -- UPDATE before publishing
+  start: 09-12-2026 03:00:01 # MM-DD-YYYY -- UPDATE before publishing
   max_submissions_per_day: 20
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours
