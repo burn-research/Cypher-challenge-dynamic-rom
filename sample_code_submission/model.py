@@ -27,8 +27,14 @@ To build a real model you will typically want to:
 import numpy as np
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
-
 from utils import list_training_simulations, load_simulation, build_one_step_pairs
+
+import warnings
+warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+# check if GPU is available for PyTorch
+import torch
+print(torch.cuda.is_available())
 
 
 class model:
@@ -38,8 +44,9 @@ class model:
         self.scaler_Y = StandardScaler()
         self.net = MLPRegressor(
             hidden_layer_sizes=(128, 128),
-            max_iter=50,
+            max_iter=3,
             random_state=0,
+            verbose=True,
         )
 
     def preprocess(self, data_folder):
@@ -80,6 +87,8 @@ class model:
             x_scaled = self.scaler_X.transform(x)
             y_scaled = self.net.predict(x_scaled)
             next_state = self.scaler_Y.inverse_transform(y_scaled).ravel()
+
+            next_state = np.nan_to_num(next_state, nan=0.0, posinf=1e6, neginf=-1e6)
 
             state_pred[:, t + 1] = next_state
             current_state = next_state

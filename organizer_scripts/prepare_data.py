@@ -48,42 +48,48 @@ import pyvista as pv
 RAW_SIMULATIONS = [
     dict(name="sineSweep_f1_f80_A02", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A02.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="train", signal="sweep", A=0.2, f=None, dt=5e-4, t0=0.0),
+         split="train", signal="sweep", A=0.2, f=None, dt=1e-3, t0=0.0),
     dict(name="sineSweep_f1_f80_A04", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A04.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="train", signal="sweep", A=0.4, f=None, dt=5e-4, t0=0.0),
+         split="train", signal="sweep", A=0.4, f=None, dt=1e-3, t0=0.0),
 
     dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="valid", signal="step", A=0.3, f=None, dt=5e-4, t0=0.0),
+         split="valid", signal="step", A=0.3, f=None, dt=1e-3, t0=0.0),
     dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="valid", signal="sine", A=0.5, f=40.0, dt=5e-4, t0=0.0),
+         split="valid", signal="sine", A=0.5, f=40.0, dt=1e-3, t0=0.0),
 
     dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="step", A=0.3, f=None, dt=5e-4, t0=0.0),
+         split="test", signal="step", A=0.3, f=None, dt=1e-3, t0=0.0),
     dict(name="step_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A05.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="step", A=0.5, f=None, dt=5e-4, t0=0.0),
+         split="test", signal="step", A=0.5, f=None, dt=1e-3, t0=0.0),
     dict(name="sine_f10_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A03.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.3, f=10.0, dt=5e-4, t0=0.0),
+         split="test", signal="sine", A=0.3, f=10.0, dt=1e-3, t0=0.0),
     dict(name="sine_f10_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A05.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.5, f=10.0, dt=5e-4, t0=0.0),
+         split="test", signal="sine", A=0.5, f=10.0, dt=1e-3, t0=0.0),
     dict(name="sine_f40_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A03.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.3, f=40.0, dt=5e-4, t0=0.0),
+         split="test", signal="sine", A=0.3, f=40.0, dt=1e-3, t0=0.0),
     dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
          raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.5, f=40.0, dt=5e-4, t0=0.0),
+         split="test", signal="sine", A=0.5, f=40.0, dt=1e-3, t0=0.0),
 ]
 
 FEATURES = ['p', 'U1', 'U3', 'rho', 'T', 'mix:Q', 'CH4', 'O2', 'H2O', 'CO2', 'OH']
 N_FEATURES = len(FEATURES)
 
 BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "..", "bundle")
+
+RAW_DT = 5e-4
+TARGET_DT = 1e-3
+STRIDE = round(TARGET_DT / RAW_DT)   # = 2
+assert abs(STRIDE * RAW_DT - TARGET_DT) < 1e-12, \
+    "TARGET_DT must be an exact integer multiple of RAW_DT"
 
 # =============================================================================
 # 2) FORCING SIGNAL phi(t) -- translated from the OpenFOAM U_code snippets
@@ -187,20 +193,22 @@ def outputs_ready(sim, input_data_dir, reference_data_dir):
     if raw_shape is None:
         # we cannot read the raw .npy file -> we cannot verify the output shapes, better to (re)process
         return False
-    nt = raw_shape[1]
- 
+    n_rows, nt_raw = raw_shape
+    nt_new = len(range(0, nt_raw, STRIDE))          # nt after temporal subsampling
+    expected_shape = (n_rows, nt_new)
+
     if split == "train":
         state_shape = npz_shape(os.path.join(sim_input_dir, "state.npz"))
         phi_shape = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
-        return state_shape == raw_shape and phi_shape == (nt,)
+        return state_shape == expected_shape and phi_shape == (nt_new,)
     else:
         initial_shape = npz_shape(os.path.join(sim_input_dir, "initial_state.npz"))
         phi_shape = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
         ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
         full_shape = npz_shape(os.path.join(ref_sim_dir, "state_full.npz"))
-        return (initial_shape == (raw_shape[0],)
-                and phi_shape == (nt,)
-                and full_shape == raw_shape)
+        return (initial_shape == (n_rows,)
+                and phi_shape == (nt_new,)
+                and full_shape == expected_shape)
 
 # =============================================================================
 # 4) MAIN
@@ -246,8 +254,8 @@ def main():
             continue
 
         raw_shape = npy_shape(sim["raw_data_path"])
-        nt = raw_shape[1]
-        phi = compute_phi(sim["signal"], nt, sim["dt"], sim["A"],
+        nt_new = len(range(0, raw_shape[1], STRIDE))
+        phi = compute_phi(sim["signal"], nt_new, sim["dt"], sim["A"],
                            f=sim.get("f"), t0=sim.get("t0", 0.0))
 
         split = sim["split"]
@@ -255,8 +263,9 @@ def main():
         os.makedirs(sim_input_dir, exist_ok=True)
 
         if split == "train":
-            # pass-through: no resampling, copy directly the raw file
-            np.savez_compressed(os.path.join(sim_input_dir, "state.npz"), data=np.load(sim["raw_data_path"]).astype(np.float32))
+            # pass-through, solo sottocampionamento temporale (nessun resampling spaziale)
+            state = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
+            np.savez_compressed(os.path.join(sim_input_dir, "state.npz"), data=state)
             np.savez_compressed(os.path.join(sim_input_dir, "phi.npz"), data=phi.astype(np.float32))
         else:
             # participants only ever see the initial snapshot + full phi
@@ -267,9 +276,10 @@ def main():
             # ground truth goes ONLY into reference_data, never into input_data
             ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
             os.makedirs(ref_sim_dir, exist_ok=True)
-            np.savez_compressed(os.path.join(ref_sim_dir, "state_full.npz"), data=np.load(sim["raw_data_path"]).astype(np.float32))
+            state_full = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
+            np.savez_compressed(os.path.join(ref_sim_dir, "state_full.npz"), data=state_full)
 
-        print(f"  -> raw shape {raw_shape}, phi {phi.shape}, split={split}")
+        print(f"  -> raw nt={raw_shape[1]} -> subsampled nt={nt_new}, phi {phi.shape}, split={split}")
 
     print("\nDone. You can now zip bundle/ (input_data and reference_data "
           "included) and upload it to Codabench, or use it for local testing.")
