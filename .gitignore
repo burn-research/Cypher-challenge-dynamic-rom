@@ -239,5 +239,7 @@ organizer_scripts/RUN.sh
 organizer_scripts/logs
 
 cypher_2026_bundle_try*.zip
+cypher_2026_bundle*.zip
+cypher_2026_bundle_light.zip
 cypher_2026_dummy_try*.zip
 
