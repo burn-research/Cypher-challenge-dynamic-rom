@@ -25,6 +25,7 @@ To build a real model you will typically want to:
 """
 
 import numpy as np
+import os
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from utils import list_training_simulations, load_simulation, build_one_step_pairs
@@ -34,7 +35,7 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 # check if GPU is available for PyTorch
 import torch
-print(torch.cuda.is_available())
+print(f"is GPU Available: {torch.cuda.is_available()}")
 
 
 class model:
@@ -50,6 +51,16 @@ class model:
         )
 
     def preprocess(self, data_folder):
+
+        print(f"--- Contents of {data_folder} ---")
+        for root, dirs, files in os.walk(data_folder):
+            level = root.replace(data_folder, '').count(os.sep)
+            indent = '  ' * level
+            print(f"{indent}{os.path.basename(root)}/")
+            for f in files:
+                print(f"{indent}  {f}")
+        print("--- End of contents ---")
+        
         X_list, Y_list = [], []
         for sim_name in list_training_simulations(data_folder):
             state, phi = load_simulation(f"{data_folder}/{sim_name}")

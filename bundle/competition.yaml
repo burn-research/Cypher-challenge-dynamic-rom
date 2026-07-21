@@ -55,8 +55,8 @@ tasks:
     simulations only. The score of your LAST submission is shown on the
     leaderboard.'
   is_public: true
-  input_data: input_data
-  reference_data: reference_data/valid
+  # input_data: input_data
+  # reference_data: reference_data/valid
   scoring_program: scoring_program
   ingestion_program: ingestion_program
 - index: 1
@@ -65,8 +65,8 @@ tasks:
     automatically cloned and re-evaluated on the held-out test simulations.
     Results are revealed by the organizers after the hackathon.'
   is_public: true
-  input_data: input_data
-  reference_data: reference_data/test
+  # input_data: input_data
+  # reference_data: reference_data/test
   scoring_program: scoring_program
   ingestion_program: ingestion_program
 solutions: []
