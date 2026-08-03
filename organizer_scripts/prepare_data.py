@@ -86,7 +86,7 @@ N_FEATURES = len(FEATURES)
 BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "..", "bundle")
 
 RAW_DT = 5e-4
-TARGET_DT = 1e-3
+TARGET_DT = 20e-4
 STRIDE = round(TARGET_DT / RAW_DT)   # = 2
 assert abs(STRIDE * RAW_DT - TARGET_DT) < 1e-12, \
     "TARGET_DT must be an exact integer multiple of RAW_DT"

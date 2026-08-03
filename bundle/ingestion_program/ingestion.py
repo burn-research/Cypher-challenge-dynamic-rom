@@ -217,7 +217,7 @@ if __name__ == "__main__" and debug_mode < 4:
 
             out_sim_dir = os.path.join(output_dir, phase, sim_name)
             mkdir(out_sim_dir)
-            np.save(os.path.join(out_sim_dir, 'state_pred.npy'), state_pred)
+            np.savez_compressed(os.path.join(out_sim_dir, 'state_pred.npz'), data=state_pred)
             with open(os.path.join(out_sim_dir, 'inference_time.txt'), 'w') as f:
                 f.write(str(inference_time))
 

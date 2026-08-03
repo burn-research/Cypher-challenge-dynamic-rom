@@ -127,14 +127,14 @@ if __name__ == "__main__":
 
         state_true = np.load(os.path.join(ref_sim_dir, "state_full.npz"))["data"]
 
-        pred_path = os.path.join(res_sim_dir, 'state_pred.npy')
+        pred_path = os.path.join(res_sim_dir, 'state_pred.npz')
         if not os.path.exists(pred_path):
             raise RuntimeError(
                 f"Missing prediction for simulation '{sim_name}' "
                 f"(expected file: {pred_path}). Did your predict() method "
                 "raise an error for this simulation?"
             )
-        state_pred = np.load(pred_path)
+        state_pred = np.load(pred_path)['data']
 
         with open(os.path.join(res_sim_dir, 'inference_time.txt'), 'r') as f:
             inference_time = float(f.read())

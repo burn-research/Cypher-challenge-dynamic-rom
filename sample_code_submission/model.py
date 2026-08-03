@@ -1,13 +1,15 @@
 """
-
 Sample predictive model for the CYPHER 2026 dynamic ROM challenge.
 
 Your submitted model.py must define a class named `model` implementing
 3 methods: preprocess(), fit(), predict(). See the "Submission" page of the
 competition for the exact contract.
 
-This example uses a small MLPRegressor (scikit-learn) trained on one-step-ahead
-pairs, then rolls forward autoregressively at prediction time.
+This example implements a trivial PERSISTENCE baseline: it predicts that
+the flow state never changes, i.e. every future snapshot is equal to the
+initial one. It completely ignores the forcing signal phi(t) and will
+obviously fail to capture the flame dynamics -- it exists only to show you
+a minimal, working submission.
 
 To build a real model you will typically want to:
   1. In preprocess(): load every training simulation (see utils.load_simulation),
@@ -26,82 +28,68 @@ To build a real model you will typically want to:
 
 import numpy as np
 import os
-from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import StandardScaler
-from utils import list_training_simulations, load_simulation, build_one_step_pairs
-
-import warnings
-warnings.filterwarnings('ignore', category=RuntimeWarning)
-
-# check if GPU is available for PyTorch
+import pyvista
+import matplotlib
 import torch
-print(f"is GPU Available: {torch.cuda.is_available()}")
+import tensorflow
+import sklearn
+import pandas
+
+from utils import list_training_simulations, load_simulation
 
 
 class model:
     def __init__(self):
         self.is_trained = False
-        self.scaler_X = StandardScaler()
-        self.scaler_Y = StandardScaler()
-        self.net = MLPRegressor(
-            hidden_layer_sizes=(128, 128),
-            max_iter=3,
-            random_state=0,
-            verbose=True,
-        )
 
     def preprocess(self, data_folder):
+        """
+        Parameters
+        ----------
+        data_folder : str
+            Path to the training data folder (e.g. .../input_data/train),
+            containing one sub-folder per training simulation.
 
-        print(f"--- Contents of {data_folder} ---")
-        for root, dirs, files in os.walk(data_folder):
-            level = root.replace(data_folder, '').count(os.sep)
-            indent = '  ' * level
-            print(f"{indent}{os.path.basename(root)}/")
-            for f in files:
-                print(f"{indent}  {f}")
-        print("--- End of contents ---")
-        
-        X_list, Y_list = [], []
+        Returns
+        -------
+        D : any object of your choice, passed on to fit().
+        """
+        simulations = {}
         for sim_name in list_training_simulations(data_folder):
             state, phi = load_simulation(f"{data_folder}/{sim_name}")
-            X, Y = build_one_step_pairs(state, phi)
-            X_list.append(X)
-            Y_list.append(Y)
-            print(f"Loaded '{sim_name}': X {X.shape}, Y {Y.shape}")
+            simulations[sim_name] = {"state": state, "phi": phi}
+            print(f"Loaded '{sim_name}': state {state.shape}, phi {phi.shape}")
 
-        X_all = np.vstack(X_list)
-        Y_all = np.vstack(Y_list)
-        return X_all, Y_all
+        return simulations
 
     def fit(self, D):
-        X_all, Y_all = D
-        X_scaled = self.scaler_X.fit_transform(X_all)
-        Y_scaled = self.scaler_Y.fit_transform(Y_all)
-
-        print(f"Training on {X_scaled.shape[0]} samples...")
-        self.net.fit(X_scaled, Y_scaled)
+        """
+        Train the model. This baseline has nothing to learn, but you would
+        typically train your network / regressor here using the pairs built
+        from D, e.g. with utils.build_one_step_pairs(state, phi).
+        """
         self.is_trained = True
-        print("Model trained.")
+        print("Model 'trained' (persistence baseline: nothing to learn).")
 
     def predict(self, test_data_folder):
+        """
+        Parameters
+        ----------
+        test_data_folder : str
+            Path to ONE validation/test simulation folder, containing
+            initial_state.npz (shape (n_features * n_cells,)) and
+            phi.npz (shape (n_timesteps,), the full known forcing signal).
+
+        Returns
+        -------
+        state_pred : ndarray, shape (n_features * n_cells, n_timesteps)
+            Forecast of the full flow state at every time step. Column 0 must
+            equal initial_state.npz.
+        """
         initial_state = np.load(f"{test_data_folder}/initial_state.npz")['data']
         phi = np.load(f"{test_data_folder}/phi.npz")['data']
 
         n_timesteps = phi.shape[0]
-        n_features = initial_state.shape[0]
-        state_pred = np.zeros((n_features, n_timesteps), dtype=np.float32)
-        state_pred[:, 0] = initial_state
-
-        current_state = initial_state
-        for t in range(n_timesteps - 1):
-            x = np.hstack([current_state, phi[t], phi[t + 1]]).reshape(1, -1)
-            x_scaled = self.scaler_X.transform(x)
-            y_scaled = self.net.predict(x_scaled)
-            next_state = self.scaler_Y.inverse_transform(y_scaled).ravel()
-
-            next_state = np.nan_to_num(next_state, nan=0.0, posinf=1e6, neginf=-1e6)
-
-            state_pred[:, t + 1] = next_state
-            current_state = next_state
+        state_pred = np.tile(initial_state.reshape(-1, 1), (1, n_timesteps))
 
         return state_pred

@@ -93,6 +93,7 @@ phases:
   description: 'Final phase: your last Development submission is
     automatically cloned and scored on the held-out test simulations.'
   start: 09-12-2026 03:00:01 # MM-DD-YYYY -- UPDATE before publishing
+  auto_migrate_to_this_phase: True
   max_submissions_per_day: 20
   max_submissions: 100
   execution_time_limit: 21600   # 6 hours
@@ -107,6 +108,7 @@ leaderboards:
 - index: 0
   title: Results
   key: Results
+  submission_rule: "Force_Best"
   columns:
   - title: Overall score
     key: score

@@ -235,14 +235,21 @@ bundle/reference_data/valid
 
 bundle/sample_output_data
 
+sample_code_submission/model_*.py
+
 organizer_scripts/RUN.sh
 organizer_scripts/logs
+organizer_scripts/prepare_uniform_data.py
 
+cypher_*.zip
 cypher_2026_bundle_try*.zip
 cypher_2026_bundle*.zip
 cypher_2026_bundle_light.zip
 cypher_2026_bundle_noData.zip
 cypher_2026_dummy_try*.zip
-input_data.zip
-reference_data.zip
+input_*.zip
+reference_*.zip
+ref_*.zip
 
+ingestion_*.zip
+scoring_*.zip
