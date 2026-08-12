@@ -45,51 +45,52 @@ import pyvista as pv
 #   dt            : simulation time step in seconds
 #   t0            : step/sweep start time (s), see U_code snippets
 
-RAW_SIMULATIONS = [
-    dict(name="sineSweep_f1_f80_A02", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A02.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="train", signal="sweep", A=0.2, f=None, dt=1e-3, t0=0.0),
-    dict(name="sineSweep_f1_f80_A04", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A04.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="train", signal="sweep", A=0.4, f=None, dt=1e-3, t0=0.0),
-
-    dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="valid", signal="step", A=0.3, f=None, dt=1e-3, t0=0.0),
-    dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="valid", signal="sine", A=0.5, f=40.0, dt=1e-3, t0=0.0),
-
-    dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="step", A=0.3, f=None, dt=1e-3, t0=0.0),
-    dict(name="step_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="step", A=0.5, f=None, dt=1e-3, t0=0.0),
-    dict(name="sine_f10_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.3, f=10.0, dt=1e-3, t0=0.0),
-    dict(name="sine_f10_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.5, f=10.0, dt=1e-3, t0=0.0),
-    dict(name="sine_f40_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.3, f=40.0, dt=1e-3, t0=0.0),
-    dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
-         split="test", signal="sine", A=0.5, f=40.0, dt=1e-3, t0=0.0),
-]
-
-FEATURES = ['p', 'U1', 'U3', 'rho', 'T', 'mix:Q', 'CH4', 'O2', 'H2O', 'CO2', 'OH']
-N_FEATURES = len(FEATURES)
-
 BUNDLE_DIR = os.path.join(os.path.dirname(__file__), "..", "bundle")
 
 RAW_DT = 5e-4
 TARGET_DT = 20e-4
-STRIDE = round(TARGET_DT / RAW_DT)   # = 2
+FEATURES = ['p', 'U1', 'U3', 'rho', 'T', 'mix:Q', 'CH4', 'O2', 'H2O', 'CO2', 'OH']
+N_FEATURES = len(FEATURES)
+
+STRIDE = round(TARGET_DT / RAW_DT)
 assert abs(STRIDE * RAW_DT - TARGET_DT) < 1e-12, \
     "TARGET_DT must be an exact integer multiple of RAW_DT"
+
+
+RAW_SIMULATIONS = [
+    dict(name="sineSweep_f1_f80_A02", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A02.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="train", signal="sweep", A=0.2, f=None, dt=RAW_DT, t0=0.0),
+    dict(name="sineSweep_f1_f80_A04", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A04.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="train", signal="sweep", A=0.4, f=None, dt=RAW_DT, t0=0.0),
+
+    dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="valid", signal="step", A=0.3, f=None, dt=RAW_DT, t0=0.0),
+    dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="valid", signal="sine", A=0.5, f=40.0, dt=RAW_DT, t0=0.0),
+
+    dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="test", signal="step", A=0.3, f=None, dt=RAW_DT, t0=0.0),
+    dict(name="step_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A05.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="test", signal="step", A=0.5, f=None, dt=RAW_DT, t0=0.0),
+    dict(name="sine_f10_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A03.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="test", signal="sine", A=0.3, f=10.0, dt=RAW_DT, t0=0.0),
+    dict(name="sine_f10_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A05.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="test", signal="sine", A=0.5, f=10.0, dt=RAW_DT, t0=0.0),
+    dict(name="sine_f40_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A03.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="test", signal="sine", A=0.3, f=40.0, dt=RAW_DT, t0=0.0),
+    dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
+         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+         split="test", signal="sine", A=0.5, f=40.0, dt=RAW_DT, t0=0.0),
+]
 
 # =============================================================================
 # 2) FORCING SIGNAL phi(t) -- translated from the OpenFOAM U_code snippets
@@ -254,9 +255,10 @@ def main():
             continue
 
         raw_shape = npy_shape(sim["raw_data_path"])
-        nt_new = len(range(0, raw_shape[1], STRIDE))
-        phi = compute_phi(sim["signal"], nt_new, sim["dt"], sim["A"],
-                           f=sim.get("f"), t0=sim.get("t0", 0.0))
+        nt_raw = raw_shape[1]
+        phi_raw = compute_phi(sim["signal"], nt_raw, RAW_DT, sim["A"], f=sim.get("f"), t0=sim.get("t0", 0.0))
+        phi = phi_raw[::STRIDE]
+        nt_new = len(range(0, nt_raw, STRIDE))
 
         split = sim["split"]
         sim_input_dir = os.path.join(input_data_dir, split, sim["name"])
