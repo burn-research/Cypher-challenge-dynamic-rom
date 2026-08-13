@@ -1,15 +1,26 @@
-# The Yaml file contains the main parameters describing the challenge.
-# You can learn more about the possible settings here: # More options here: https://github.com/codalab/codabench/wiki/Yaml-Structure
+# Codabench competition bundle definition.
+# Docs: https://github.com/codalab/codabench/wiki/Yaml-Structure
 
+# ---------------------------------------------------------------------------
 # Main settings
-version: 2 # this means that it is a Codabench bundle
-title: CYPHER 2026 - Scientific Machine-learning school competition
-description: Development of a data-driven reduced-order model of a reactive dynamical system.
-image: robot_logo.png
-registration_auto_approve: True  # do not require approval from admin to join the comp
-docker_image: 'lorenzopiu1/cypher-codabench-image:v4'
+# ---------------------------------------------------------------------------
+version: 2
+title: "CYPHER 2026: Hackathon on Reduced-Order Modeling for Advanced Combustion Systems"
+description: >
+  Development of a data-driven reduced-order model of a reactive dynamical system.
+image: images/robot_logo.png
+registration_auto_approve: True
+# NOTE: this image already contains numpy/scipy/scikit-learn/pytorch/tensorflow,
+# inherited from the previous CYPHER challenge. See the "Docker image" section
+# of the organizer README before changing it.
+docker_image: 'tommasobaffetti/cypher2026-hackaton-image:v1'
+contact_email: tommaso.baffetti@ulb.be
+make_input_data_available: True
+make_programs_available: True
 
+# ---------------------------------------------------------------------------
 # Documentation web pages
+# ---------------------------------------------------------------------------
 terms: pages/terms.html
 pages:
   - title: Overview
@@ -27,64 +38,77 @@ pages:
   - title: Organizing Committee
     file: pages/organizing.html
 
-# Definition of the tasks
+# ---------------------------------------------------------------------------
+# Tasks
+# input_data is the SAME physical folder for both tasks: it contains the
+# training data plus the "public" (label-free) valid/ and test/ splits that
+# the ingestion program is allowed to read (initial condition + forcing
+# signal only, never the ground-truth trajectory).
+# reference_data points to the hidden ground truth used by the scoring
+# program only, and differs between the two tasks/phases.
+# ---------------------------------------------------------------------------
 tasks:
 - index: 0
   name: Development Task
-  description: 'Development phase: create models and submit them or directly submit
-    results on validation and/or test data; feed-back are provided on the validation
-    set only.'
+  description: 'Development phase: train your model on the provided training
+    simulations and submit it. You get feedback (NRMSE) on the validation
+    simulations only. The score of your LAST submission is shown on the
+    leaderboard.'
   is_public: true
-  input_data: input_data
-  reference_data: reference_data/valid
+  # input_data: input_data
+  # reference_data: reference_data/valid
   scoring_program: scoring_program
   ingestion_program: ingestion_program
 - index: 1
   name: Final Task
-  description: 'Final phase: submissions from the previous phase are automatically
-    cloned and used to compute the final score. The results on the test set will be
-    revealed when the organizers make them available.'
+  description: 'Final phase: your last Development-phase submission is
+    automatically cloned and re-evaluated on the held-out test simulations.
+    Results are revealed by the organizers after the hackathon.'
   is_public: true
-  input_data: input_data
-  reference_data: reference_data/test
+  # input_data: input_data
+  # reference_data: reference_data/test
   scoring_program: scoring_program
   ingestion_program: ingestion_program
 solutions: []
 
-# There are 2 phases: development phase and final phase
-# Each one is linked to a task
+# ---------------------------------------------------------------------------
+# Phases
+# Adjust the start/end dates below to match the actual hackathon schedule.
+# ---------------------------------------------------------------------------
 phases:
 - index: 0
   name: Development
-  description: 'Development phase: create models and submit them or directly submit
-    results on validation and/or test data; feed-back are provided on the validation
-    set only.'
-  start: 5-1-2025 # Month/Day/Year
-  end: 5-31-2025
-  max_submissions_per_day: 100
-  max_submissions: 500
-  execution_time_limit: 21600
+  description: 'Development phase: train and submit your model. Feedback is
+    given on the validation simulations only.'
+  start: 09-10-2026 00:00:00 # MM-DD-YYYY -- UPDATE before publishing
+  end: 09-12-2026 03:00:00 # MM-DD-YYYY   -- UPDATE before publishing
+  max_submissions_per_day: 20
+  max_submissions: 100
+  execution_time_limit: 21600   # 6 hours
   tasks:
   - 0
   solutions: []
 - index: 1
   name: Final
-  description: 'Final phase: submissions from the previous phase are automatically
-    cloned and used to compute the final score. The results on the test set will be
-    revealed when the organizers make them available.'
-  start: 6-1-2025 # Never ends
-  max_submissions_per_day: 100
-  max_submissions: 500
-  execution_time_limit: 21600
+  description: 'Final phase: your last Development submission is
+    automatically cloned and scored on the held-out test simulations.'
+  start: 09-12-2026 03:00:01 # MM-DD-YYYY -- UPDATE before publishing
+  auto_migrate_to_this_phase: True
+  max_submissions_per_day: 20
+  max_submissions: 100
+  execution_time_limit: 21600   # 6 hours
   tasks:
   - 1
   solutions: []
 
+# ---------------------------------------------------------------------------
 # Leaderboard
+# ---------------------------------------------------------------------------
 leaderboards:
 - index: 0
   title: Results
   key: Results
+  submission_rule: "Force_Best"
   columns:
   - title: Overall score
     key: score
@@ -92,53 +116,24 @@ leaderboards:
     sorting: asc
     computation: null
     computation_indexes: null
-  - title: MSE
-    key: MSE
+  - title: NRMSE
+    key: NRMSE
     index: 1
     sorting: asc
     computation: null
     computation_indexes: null
-    numeric_format: 5    
-  - title: Inference time [s*10^-6]
+    numeric_format: 5
+  - title: Inference time [s / snapshot]
     key: time_inference
     index: 2
     sorting: asc
     computation: null
     computation_indexes: null
+    numeric_format: 5
   - title: Training time [s]
     key: time_training
     index: 3
     sorting: asc
     computation: null
     computation_indexes: null
-    
-leaderboards:
-- index: 1
-  title: Results
-  key: Results
-  columns:
-  - title: Overall score
-    key: score
-    index: 0
-    sorting: asc
-    computation: null
-    computation_indexes: null
-  - title: MSE
-    key: MSE
-    index: 1
-    sorting: asc
-    computation: null
-    computation_indexes: null
-    numeric_format: 5    
-  - title: Inference time [s*10^-6]
-    key: time_inference
-    index: 2
-    sorting: asc
-    computation: null
-    computation_indexes: null
-  - title: Training time [s]
-    key: time_training
-    index: 3
-    sorting: asc
-    computation: null
-    computation_indexes: null
+    numeric_format: 2

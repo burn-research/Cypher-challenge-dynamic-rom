@@ -1,2 +1,132 @@
-<h1>2D Laminar flame data</h1>
-<p> ... </p>
+<h1>Dataset: externally forced 2D laminar flame</h1>
+
+<p>
+The data comes from CFD simulations of 2D transient laminar coflow diffusion
+flames burning a CH4 and N2 mixture in air, with pulsed/forced inlet velocity.
+All fields are provided on a common unstructered grid.vtu (pyvista format) and
+a corresponding xyz.npy file with the coordinates of the grid cells.
+</p>
+
+<h2>Flow variables</h2>
+<p>At every grid cell and time step, the following 11 variables are available (stacked in this exact order in <code>state.npy</code>):</p>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>#</th><th>Name</th><th>Description</th></tr>
+<tr><td>0</td><td><code>p</code></td><td>pressure</td></tr>
+<tr><td>1</td><td><code>U1</code></td><td>velocity component 1</td></tr>
+<tr><td>2</td><td><code>U3</code></td><td>velocity component 3</td></tr>
+<tr><td>3</td><td><code>rho</code></td><td>density</td></tr>
+<tr><td>4</td><td><code>T</code></td><td>temperature</td></tr>
+<tr><td>5</td><td><code>mix:Q</code></td><td>heat release rate</td></tr>
+<tr><td>6</td><td><code>CH4</code></td><td>species mass fraction</td></tr>
+<tr><td>7</td><td><code>O2</code></td><td>species mass fraction</td></tr>
+<tr><td>8</td><td><code>H2O</code></td><td>species mass fraction</td></tr>
+<tr><td>9</td><td><code>CO2</code></td><td>species mass fraction</td></tr>
+<tr><td>10</td><td><code>OH</code></td><td>species mass fraction</td></tr>
+</table>
+
+<h2>The forcing signal &phi;(t)</h2>
+<p>
+The inlet velocity profile is modulated in time by a scalar forcing signal
+&phi;(t). The bulk inlet velocity at time t is <code>U(t) = U_base &middot;
+&phi;(t)</code>. U_base = 0.35 m/s while &phi;(t) is provided to you explicitly, alongside the flow
+state, as an additional input at every time step.
+</p>
+
+<h3>Exact definition of &phi;(t), by signal type</h3>
+
+<p><b>Step</b></p>
+<p>
+for t &lt; t&#8320; : &phi;<sub>step</sub>(t) = 1<br>
+for t &ge; t&#8320; : &phi;<sub>step</sub>(t) = 1 + A
+</p>
+<p>In this dataset t&#8320; = 0 s for every step simulation, so &phi; is
+simply constant and equal to 1 + A over the whole trajectory.</p>
+
+<p><b>Sine</b></p>
+<p>
+&phi;<sub>sine</sub>(t) = 1 + A &middot; sin(2&pi; f t)
+</p>
+
+<p><b>Sine sweep (chirp, exponential frequency law)</b></p>
+<p>
+Let f&#8320; = 1 Hz, f&#8321; = 80 Hz, T = 1 s (duration of each leg),
+k = ln(f&#8321;/f&#8320;). The signal goes 1&rarr;80 Hz over [0, T) and
+80&rarr;1 Hz over [T, 2T], phase-continuous at t = T:
+</p>
+<p>
+&phi;<sub>sweep</sub>(t) = 1 + A &middot; sin(&psi;(t))<br>
+<br>
+for 0 &le; t &lt; T : &psi;(t) = (2&pi;f&#8320;/k)(e<sup>kt</sup> &minus; 1)<br>
+for T &le; t &le; 2T : &psi;(t) = &psi;(T) + (2&pi;f&#8321;/k)(1 &minus; e<sup>&minus;k(t&minus;T)</sup>)
+</p>
+
+<h2>File format</h2>
+<p>Every simulation is stored as a folder containing:</p>
+<ul>
+  <li><code>state.npy</code> &mdash; array of shape <code>(n_features * n_cells, n_timesteps)</code>,
+  the flattened flow state at every time step (features stacked in the order
+  listed above, each block of <code>n_cells</code> rows corresponding to
+  one feature, in the cell order given by grid.vtu/xyz.npy).</li>
+  <li><code>phi.npy</code> &mdash; array of shape <code>(n_timesteps,)</code>,
+  the forcing signal value at every time step.</li>
+</ul>
+<p>
+Two shared files describe the spatial mesh: <code>xyz.npy</code> (shape
+<code>(n_cells, 3)</code>, columns x, y, z — cell-center coordinates) and
+<code>grid.vtu</code> (the raw unstructured mesh, readable with pyvista),
+in case you want to exploit the spatial structure of the domain (e.g. convolutional
+architectures). The time step is constant and equal to <code>dt = 5e-4 s</code>
+in every simulation.
+</p>
+
+<h3>Dataset dimensions</h3>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Quantity</th><th>Value</th></tr>
+<tr><td>n_features</td><td>11</td></tr>
+<tr><td>n_cells</td><td>21334</td></tr>
+<tr><td>n_features &middot; n_cells (rows of <code>state.npy</code>)</td><td>234674</td></tr>
+<tr><td>dt (time step)</td><td>5&middot;10<sup>-4</sup> s (0.5 ms)</td></tr>
+</table>
+
+<h2>Training data</h2>
+<p>Two sine-sweep (chirp) simulations, 1 Hz &rarr; 80 Hz &rarr; 1 Hz over 2 s, at two amplitudes:</p>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Folder</th><th>&phi; type</th><th>A</th><th>n_timesteps</th><th>Duration</th></tr>
+<tr><td><code>train/sineSweep_f1_f80_A02</code></td><td>sweep</td><td>0.2</td><td>4001</td><td>2.0 s</td></tr>
+<tr><td><code>train/sineSweep_f1_f80_A04</code></td><td>sweep</td><td>0.4</td><td>4001</td><td>2.0 s</td></tr>
+</table>
+
+<h2>Validation data (Development phase feedback)</h2>
+<p>
+You are given, for each validation case, only the <b>initial snapshot</b>
+of the state and the <b>full future forcing trajectory</b> &phi;(t) &mdash;
+never the ground-truth evolution of the state.
+</p>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Folder</th><th>&phi; type</th><th>A</th><th>f</th><th>n_timesteps</th><th>Duration</th></tr>
+<tr><td><code>valid/step_A03</code></td><td>step</td><td>0.3</td><td>&mdash;</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>valid/sine_f40_A05</code></td><td>sine</td><td>0.5</td><td>40 Hz</td><td>2001</td><td>1.0 s</td></tr>
+</table>
+
+<h2>Final test data</h2>
+<p>
+Same principle as the validation set (initial snapshot + forcing signal
+only), used exclusively for the Final phase score. You never get access to
+the ground-truth trajectories.
+</p>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Folder</th><th>&phi; type</th><th>A</th><th>f</th><th>n_timesteps</th><th>Duration</th></tr>
+<tr><td><code>test/step_A03</code></td><td>step</td><td>0.3</td><td>&mdash;</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>test/step_A05</code></td><td>step</td><td>0.5</td><td>&mdash;</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f10_A03</code></td><td>sine</td><td>0.3</td><td>10 Hz</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f10_A05</code></td><td>sine</td><td>0.5</td><td>10 Hz</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f40_A03</code></td><td>sine</td><td>0.3</td><td>40 Hz</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f40_A05</code></td><td>sine</td><td>0.5</td><td>40 Hz</td><td>2001</td><td>1.0 s</td></tr>
+</table>
+
+<h2>What you will never see</h2>
+<p>
+The ground-truth trajectories of the validation and test simulations, and
+any data beyond what is described above, are never shared with participants
+and never available for local testing.
+</p>

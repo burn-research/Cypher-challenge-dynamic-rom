@@ -1,2 +1,2 @@
-command: python $ingestion_program/ingestion.py $input $output $ingestion_program $submission_program $test_data  
-
+command: python $ingestion_program/ingestion.py $input $output $ingestion_program $submission_program
+description: Runs the participant's submitted model on the training data, then forecasts every validation/test simulation.

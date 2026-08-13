@@ -1,10 +1,52 @@
-<p>The problem is the forecasting of the temporal evolution of a combustion system. There are 2 phases:</p>
+<h1>Evaluation</h1>
+
+The problem is the forecasting of the temporal evolution of a combustion system.
+There are 2 phases:</p>
 
 <ul>    
-    <li> <b>Phase 1</b>: development phase. We provide you with labeled training data and unlabeled validation and test data. Make predictions for both datasets. However, you will receive feed-back on your performance on the validation set only. The performance of your <strong>last</strong> submission will be displayed on the leaderboard.</li>
-    <li> <b>Phase 2</b>: final phase. You do not need to do anything. Your last submission of phase 1 will be automatically forwarded. Your performance on the test set will appear on the leaderboard when the organizers finish checking the submissions.</li>
+    <li> <b>Phase 1</b>: development phase. We provide you with labeled training
+      data and unlabeled validation and test data. Make predictions for both datasets.
+      However, you will receive feed-back on your performance on the validation set
+      only. The performance of your <strong>last</strong> submission will be displayed
+      on the leaderboard.</li>
+    <li> <b>Phase 2</b>: final phase. You do not need to do anything. Your last
+      submission of phase 1 will be automatically forwarded. Your performance on the
+      test set will appear on the leaderboard when the organizers finish checking
+      the submissions.</li>
 </ul>
 
-<p>This competition allows you to submit a prediction model that must be trained and tested.</p>
+<p>
+This competition allows you to submit a prediction model that must be trained
+and tested.
+</p>
 
-<p>The submissions are evaluated using the mse_metric metric plus a penalization term that accounts for the inference time.</p>
+<h2>Metric</h2>
+<p>
+The main accuracy metric is the Normalized Root Mean Square Error (NRMSE),
+computed independently for each of the 11 physical fields and then averaged.
+For a given field, over all grid cells and all forecasted time steps:
+</p>
+<p>
+<code>NRMSE = RMSE(field_true, field_pred) / std(field_true)</code>
+</p>
+<p>
+where the standard deviation is computed over the ground-truth test/validation
+trajectory of that field. The NRMSE is first averaged over all time steps and
+grid cells for each field, then averaged across the 11 fields, then averaged
+across all simulations in the phase.
+</p>
+
+<h2>Overall score</h2>
+<p>
+The leaderboard "Overall score" combines the forecasting accuracy (NRMSE)
+with a penalty on the per-snapshot inference time, to reward models that are
+both accurate and fast:
+</p>
+<p>
+<code>score = NRMSE + &beta; &middot; inference_time_per_snapshot</code>
+</p>
+<p>
+Training time and inference time are also reported separately on the
+leaderboard for reference and are not part of the ranking score itself,
+but excessively slow submissions may hit the execution time limit.
+</p>

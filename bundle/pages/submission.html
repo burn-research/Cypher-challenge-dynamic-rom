@@ -1,3 +1,45 @@
 <h1>Submission</h1>
-<p>Insert information about submission.</p>
 
+<p>
+Submit a zip archive containing a Python file named <code>model.py</code>
+that defines a class named <code>model</code>. Any additional Python module
+you need can be added to the archive (e.g. helper files), but no pretrained
+weights or extra data are allowed. The <code>sample_code_submission.zip</code>
+available on the "Files" tab of this competition shows the expected
+structure and a minimal working baseline.
+</p>
+
+<h2>Required interface</h2>
+<p>Your <code>model</code> class must implement three methods:</p>
+<ul>
+  <li><code>preprocess(self, data_folder)</code>: <code>data_folder</code> is
+  the path to the training data folder (containing one sub-folder per
+  training simulation, each with <code>state.npy</code> and
+  <code>phi.npy</code>). Return any object <code>D</code> you like &mdash;
+  it will be passed to <code>fit()</code>.</li>
+  <li><code>fit(self, D)</code>: train your model using <code>D</code>. No
+  return value is expected; store the trained parameters as attributes of
+  <code>self</code>.</li>
+  <li><code>predict(self, test_data_folder)</code>: <code>test_data_folder</code>
+  is the path to a single validation/test simulation folder, containing only
+  <code>initial_state.npy</code> (shape <code>(n_features * n_cells,)</code>) and
+  <code>phi.npy</code> (shape <code>(n_timesteps,)</code>, the full known
+  forcing trajectory). Return a numpy array of shape
+  <code>(n_features * n_cells, n_timesteps)</code>: your forecast of the full flow
+  state at every time step, where column 0 must equal
+  <code>initial_state.npy</code>.</li>
+</ul>
+
+<p>
+You are free to use any library (PyTorch, TensorFlow, scikit-learn, or plain
+NumPy) to build your model. Preprocessing, scaling, and the choice of
+autoregressive vs. direct multi-step forecasting strategy are entirely up to
+you &mdash; the only constraint is the three-method interface above.
+</p>
+
+<h2>Time budget</h2>
+<p>
+Each submission (preprocessing + training + inference on all
+validation/test simulations) has a maximum execution time budget of 6 hours
+on the challenge infrastructure.
+</p>

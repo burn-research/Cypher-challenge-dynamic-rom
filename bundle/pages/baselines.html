@@ -1,3 +1,12 @@
-<h1>Iris: Data</h1>
-<p>This challenge relies on the iris dataset&nbsp;from UCI repository. See the full description&nbsp;<a href="http://archive.ics.uci.edu/ml/datasets/Iris">here</a>.</p>
-<p>You can download the data and a starting kit allowing you to generate a baseline submission from the "Files" tab.</p>
+<h1>Baselines</h1>
+<p>
+A minimal working baseline is provided in <code>sample_code_submission.zip</code>,
+available from the "Files" tab of this competition. It implements the
+required <code>model</code> interface (<code>preprocess</code>,
+<code>fit</code>, <code>predict</code>) with a simple persistence model
+(the flow state is predicted to stay constant, equal to the initial
+snapshot, at every future time step) so that you can see how to structure
+your own submission and how the ingestion program calls your code. It is
+intentionally not tuned for accuracy: it exists to be extended or replaced,
+not to be competitive.
+</p>

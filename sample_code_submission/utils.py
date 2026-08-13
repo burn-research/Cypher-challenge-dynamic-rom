@@ -1,109 +1,90 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu May 22 10:51:59 2025
-
-@author: lorenzo piu
+Helper functions to load the CYPHER 2026 dynamic-ROM dataset.
+Feel free to modify or ignore this file entirely -- it is only provided as
+a convenience starting point for your own submission.
 """
 
-import numpy as np
 import os
 import random
-import sys
-from contextlib import contextmanager
-
+import numpy as np
 
 
 def set_global_seed(seed: int):
-    """Set seed for Python, NumPy, PyTorch, and TensorFlow to ensure reproducibility."""
+    """Set seed for Python, NumPy, PyTorch and TensorFlow (if installed),
+    for reproducibility."""
     os.environ['PYTHONHASHSEED'] = str(seed)
-    
-    # Python built-in random module
     random.seed(seed)
-
-    # NumPy
-    try:
-        import numpy as np
-        np.random.seed(seed)
-    except ImportError:
-        pass
-
-    # PyTorch
+    np.random.seed(seed)
     try:
         import torch
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
     except ImportError:
         pass
-
-    # TensorFlow
     try:
         import tensorflow as tf
         tf.random.set_seed(seed)
     except ImportError:
         pass
-    
-    
-def product(values):
+
+
+def list_training_simulations(train_folder):
+    """Return the sorted list of simulation sub-folder names in the training
+    data folder, e.g. ['sweep_A0.2', 'sweep_A0.4']."""
+    return sorted(
+        d for d in os.listdir(train_folder)
+        if os.path.isdir(os.path.join(train_folder, d))
+    )
+
+
+def load_simulation(sim_folder):
+    """Load a full training simulation.
+
+    Parameters
+    ----------
+    sim_folder : str
+        Path to a simulation folder containing state.npz and phi.npz.
+
+    Returns
+    -------
+    state : ndarray, shape (n_features * n_cells, n_timesteps)
+    phi   : ndarray, shape (n_timesteps,)
     """
-    Calculate the product of all numeric values in a list.
+    state = np.load(os.path.join(sim_folder, 'state.npz'))['data']
+    phi = np.load(os.path.join(sim_folder, 'phi.npz'))['data']
+    return state, phi
 
-    Parameters:
-        values (list): A list of numeric values (int or float).
 
-    Returns:
-        float|int: The product of all the values in the list.
+def load_test_simulation(sim_folder):
+    """Load a validation/test simulation, as seen by predict().
+    Only the initial snapshot and the future forcing trajectory are
+    available -- never the ground-truth state evolution.
 
-    Raises:
-        TypeError: If the input is not a list or contains non-numeric elements.
+    Returns
+    -------
+    initial_state : ndarray, shape (n_features * n_cells,)
+    phi           : ndarray, shape (n_timesteps,) -- known future forcing signal
     """
-    if not isinstance(values, list):
-        raise TypeError("Input must be a list.")
-
-    result = 1
-    for v in values:
-        if not isinstance(v, (int, float)):
-            raise TypeError(f"All elements must be int or float, got {type(v).__name__}.")
-        result *= v
-
-    return result
+    initial_state = np.load(os.path.join(sim_folder, 'initial_state.npz'))['data']
+    phi = np.load(os.path.join(sim_folder, 'phi.npz'))['data']
+    return initial_state, phi
 
 
-def sample_indices(n, m):
+def build_one_step_pairs(state, phi):
+    """Turn a (state, phi) simulation into supervised one-step-ahead pairs,
+    a common starting point for autoregressive forecasting models:
+
+        input  = [state_t, phi_t, phi_{t+1}]
+        target = state_{t+1}
+
+    i.e. "given where I am now and how the forcing changes, predict the
+    next state". Returned arrays have (n_timesteps - 1) rows.
     """
-    Return a list of n unique random integers from the range [0, m-1].
-
-    Parameters:
-        n (int): Number of integers to extract.
-        m (int): Upper bound (exclusive) of the range to sample from.
-
-    Returns:
-        list[int]: A list of n unique integers from 0 to m-1.
-
-    Raises:
-        ValueError: If n > m or if n/m are not positive integers.
-    """
-    if not (isinstance(n, int) and isinstance(m, int)):
-        raise TypeError("Both n and m must be integers.")
-    if n > m:
-        raise ValueError("Cannot sample more elements than the size of the range (n > m).")
-    if n < 0 or m <= 0:
-        raise ValueError("n must be non-negative and m must be positive.")
-    
-    return sorted(random.sample(range(m), n))
-
-
-# Context manager to mute print statements
-@contextmanager
-def mute_print():
-    # Backup the original stdout
-    original_stdout = sys.stdout
-    sys.stdout = open(os.devnull, 'w')  # Redirect stdout to devnull
-    try:
-        yield  # Execute the block of code inside the context manager
-    finally:
-        # Restore the original stdout after the block runs
-        sys.stdout = original_stdout
-
+    X_state = state[:, :-1].T
+    phi_t = phi[:-1].reshape(-1, 1)
+    phi_tp1 = phi[1:].reshape(-1, 1)
+    X = np.hstack([X_state, phi_t, phi_tp1])
+    Y = state[:, 1:].T
+    return X.astype(np.float32), Y.astype(np.float32)

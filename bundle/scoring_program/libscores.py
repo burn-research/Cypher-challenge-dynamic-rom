@@ -1,80 +1,94 @@
-# Score library for NUMPY arrays
-# ChaLearn AutoML challenge
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Scoring utilities for the CYPHER 2026 dynamic ROM challenge.
 
-# For regression:
-# solution and prediction are vectors of numerical values of the same dimension
-
-# For classification:
-# solution = array(p,n) of 0,1 truth values, samples in lines, classes in columns
-# prediction = array(p,n) of numerical scores between 0 and 1 (analogous to probabilities)
-
-# Isabelle Guyon and Arthur Pesah, ChaLearn, August-November 2014
-
-# ALL INFORMATION, SOFTWARE, DOCUMENTATION, AND DATA ARE PROVIDED "AS-IS".
-# ISABELLE GUYON, CHALEARN, AND/OR OTHER ORGANIZERS OR CODE AUTHORS DISCLAIM
-# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR ANY PARTICULAR PURPOSE, AND THE
-# WARRANTY OF NON-INFRINGEMENT OF ANY THIRD PARTY'S INTELLECTUAL PROPERTY RIGHTS.
-# IN NO EVENT SHALL ISABELLE GUYON AND/OR OTHER ORGANIZERS BE LIABLE FOR ANY SPECIAL,
-# INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER ARISING OUT OF OR IN
-# CONNECTION WITH THE USE OR PERFORMANCE OF SOFTWARE, DOCUMENTS, MATERIALS,
-# PUBLICATIONS, OR INFORMATION MADE AVAILABLE FOR THE CHALLENGE.
+Adapted from the CYPHER 2025 DNS challenge (Lorenzo Piu, ULB) and from the
+NRMSE routine used internally by the CYPHER team for ROM evaluation. The
+core idea (per-feature NRMSE, normalized by the standard deviation of the
+ground truth, averaged across features) is preserved; the implementation
+below is adapted to the (n_timesteps, n_features * n_cells) array layout
+used in this challenge instead of a generic (n_samples, n_features) table.
+"""
 
 import os
-from sys import stderr
-from sys import version
-
 import numpy as np
-import scipy as sp
-from sklearn import metrics
-from sklearn.preprocessing import *
 
-swrite = stderr.write
-from os import getcwd as pwd
-#from pip import get_installed_distributions as lib # TODO: UPDATE
-from glob import glob
-import platform
-import psutil
-
-def loss(alpha_t, rho, C_grad, Tau):
-    # Convert inputs to numpy arrays (if they aren't already)
-    alpha_t = np.asarray(alpha_t)
-    rho = np.asarray(rho)
-    C_grad = np.asarray(C_grad)
-    Tau = np.asarray(Tau)
-    
-    # Check if alpha_t and rho are 1D or 2D column vectors
-    def is_vector(x):
-        return (x.ndim == 1) or (x.ndim == 2 and x.shape[1] == 1)
- 
-    if not is_vector(alpha_t):
-        raise ValueError("alpha_t must be a 1D array or a 2D column vector (shape (n,) or (n,1)).")
-    if not is_vector(rho):
-        raise ValueError("rho must be a 1D array or a 2D column vector (shape (n,) or (n,1)).")
- 
-    # Normalize shape to (n,) for comparison
-    alpha_len = alpha_t.shape[0]
-    rho_len = rho.shape[0]
- 
-    # Check if C_grad and Tau are 2D with 3 columns
-    if C_grad.ndim != 2 or C_grad.shape[1] != 3:
-        raise ValueError("C_grad must be a 2D array with 3 columns.")
-    if Tau.ndim != 2 or Tau.shape[1] != 3:
-        raise ValueError("Tau must be a 2D array with 3 columns.")
- 
-    # Check all lengths match
-    if not (rho_len == alpha_len == C_grad.shape[0] == Tau.shape[0]):
-        raise ValueError("alpha_t, rho, C_grad, and Tau must all have the same number of rows.")
-    
-    
-    alpha_t = alpha_t.reshape(-1,1)
-    rho   = rho.reshape(-1, 1)
-    pred  = rho*alpha_t*C_grad
-    mse   = np.average(((pred-Tau).flatten())**2)
-    
-    return mse
-     
 
 def mkdir(d):
     if not os.path.exists(d):
         os.makedirs(d)
+
+
+def compute_nrmse_field(state_true, state_pred, n_features,
+                         eps_mean=1e-7, eps_std=1e-7):
+    """
+    Compute the Normalized Root Mean Square Error (NRMSE) between a
+    predicted and a true flow-state trajectory, per physical feature.
+
+    Parameters
+    ----------
+    state_true : ndarray, shape (n_timesteps, n_features * n_cells)
+        Ground-truth trajectory.
+    state_pred : ndarray, shape (n_timesteps, n_features * n_cells)
+        Predicted trajectory (same shape as state_true).
+    n_features : int
+        Number of physical features stacked along the column axis
+        (e.g. 11 for p, U1, U3, rho, T, mix:Q, CH4, O2, H2O, CO2, OH).
+    eps_mean, eps_std : float
+        Features whose ground-truth mean and standard deviation are both
+        below these thresholds (e.g. an all-zero species field) are
+        excluded from the average, to avoid dividing by ~0.
+
+    Returns
+    -------
+    nrmse_global : float
+        NRMSE averaged over the retained features.
+    nrmse_per_feature : ndarray, shape (n_kept_features,)
+        NRMSE for each retained feature (in the original feature order,
+        excluded features removed).
+    n_kept_features : int
+        Number of features actually used in the average.
+    """
+    state_true = np.asarray(state_true, dtype=np.float64)
+    state_pred = np.asarray(state_pred, dtype=np.float64)
+
+    if state_true.shape != state_pred.shape:
+        raise ValueError(
+            f"Shape mismatch between prediction {state_pred.shape} and "
+            f"ground truth {state_true.shape}."
+        )
+
+    n_rows, n_timesteps = state_true.shape
+    if n_rows % n_features != 0:
+        raise ValueError(
+            f"Number of rows ({n_rows}) is not divisible by "
+            f"n_features ({n_features})."
+        )
+    n_cells = n_rows // n_features
+
+    # reshape to (n_features, n_cells, n_timesteps)
+    true_r = state_true.reshape(n_features, n_cells, n_timesteps)
+    pred_r = state_pred.reshape(n_features, n_cells, n_timesteps)
+
+    mean = np.mean(true_r, axis=(1, 2))   # shape (n_features,)
+    std = np.std(true_r, axis=(1, 2), ddof=1)
+
+    mask_eliminate = (np.abs(mean) < eps_mean) & (std < eps_std)
+    mask = ~mask_eliminate
+
+    std_safe = std.copy()
+    std_safe[std_safe < eps_std] = eps_std
+
+    rmse_per_feature = np.sqrt(np.mean((true_r - pred_r) ** 2, axis=(1, 2)))
+    nrmse_per_feature_all = rmse_per_feature / std_safe
+
+    nrmse_per_feature = nrmse_per_feature_all[mask]
+
+    if nrmse_per_feature.size == 0:
+        raise ValueError("All features were excluded from the NRMSE "
+                          "computation (constant ground truth?).")
+
+    nrmse_global = float(np.mean(nrmse_per_feature))
+
+    return nrmse_global, nrmse_per_feature, int(mask.sum())

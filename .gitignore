@@ -207,3 +207,49 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python
+
+# -------------------------------------------------------------------------------------------------------------
+# START TOMMASO GITIGNORE:
+
+bundle/input_data/grid.npy
+bundle/input_data/grid.npz
+bundle/input_data/grid*.vtu
+bundle/input_data/xyz.npy
+bundle/input_data/xyz.npz
+bundle/input_data/test
+bundle/input_data/train 
+bundle/input_data/valid
+
+bundle/data_directory/grid.npy
+bundle/data_directory/grid.npz
+bundle/data_directory/grid.vtu
+bundle/data_directory/xyz.npy
+bundle/data_directory/xyz.npz
+bundle/data_directory/test
+bundle/data_directory/train 
+bundle/data_directory/valid
+
+bundle/reference_data/test 
+bundle/reference_data/train 
+bundle/reference_data/valid
+
+bundle/sample_output_data
+
+sample_code_submission/model_*.py
+
+organizer_scripts/RUN.sh
+organizer_scripts/logs
+organizer_scripts/prepare_uniform_data.py
+
+cypher_*.zip
+cypher_2026_bundle_try*.zip
+cypher_2026_bundle*.zip
+cypher_2026_bundle_light.zip
+cypher_2026_bundle_noData.zip
+cypher_2026_dummy_try*.zip
+input_*.zip
+reference_*.zip
+ref_*.zip
+
+ingestion_*.zip
+scoring_*.zip
