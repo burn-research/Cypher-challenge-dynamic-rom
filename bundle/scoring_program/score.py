@@ -12,6 +12,7 @@ import json
 from sys import argv
 import numpy as np
 import time
+import math
 
 from libscores import compute_nrmse_field, mkdir
 
@@ -139,8 +140,8 @@ if __name__ == "__main__":
         with open(os.path.join(res_sim_dir, 'inference_time.txt'), 'r') as f:
             inference_time = float(f.read())
 
-        print(f' state pred shape: {state_pred.shape}')
-        print(f' state true shape: {state_true.shape}')
+        # print(f' state pred shape: {state_pred.shape}')
+        # print(f' state true shape: {state_true.shape}')
         if state_pred.shape[2] != state_true.shape[2]:
             raise RuntimeError(
                 f"Simulation '{sim_name}': prediction has "
@@ -162,6 +163,20 @@ if __name__ == "__main__":
     inference_time_per_snapshot = float(np.mean(inference_time_per_snapshot_list))
 
     score = nrmse + beta * inference_time_per_snapshot
+
+    if math.isnan(nrmse):
+        print("\n WARNING: NRMSE is NaN!")
+        print("\n Probably the prediction error exploded")
+        print(" We set the default value of NRMSE = 1000...\n\n")
+        nrmse = 1000
+        score = nrmse + beta * inference_time_per_snapshot
+
+    elif nrmse > 10e8:
+        print("\n WARINING: NRMSE is extremely high!")
+        print(f" NRMSE = {nrmse}")
+        print(" We set the default value of NRMSE = 1000...\n\n")
+        nrmse = 1000
+        score = nrmse + beta * inference_time_per_snapshot
 
     if verbose:
         print('\n====================================')
