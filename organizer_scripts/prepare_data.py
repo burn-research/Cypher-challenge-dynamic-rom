@@ -144,6 +144,20 @@ def compute_phi(signal, nt, dt, A, f=None, t0=0.0):
     else:
         raise ValueError(f"Unknown signal type '{signal}'")
 
+def reshape_to_tensor(matrix, n_features, n_cells):
+    """
+    Converte DataMatrix di shape [N_features * N_cells, N_timestep]
+    in un tensore di shape [N_cells, N_features, N_timestep].
+    
+    Il layout originale è: righe 0..n_cells-1 = feature 0,
+                           righe n_cells..2*n_cells-1 = feature 1, ecc.
+    """
+    nt = matrix.shape[1]
+    tensor = np.empty((n_cells, n_features, nt), dtype=np.float32)
+    for f in range(n_features):
+        tensor[:, f, :] = matrix[f * n_cells:(f + 1) * n_cells, :]
+    return tensor
+
 def npy_shape(path):
     """
     It returns the shape of a .npy file saved on disk WITHOUT loading it
@@ -192,24 +206,26 @@ def outputs_ready(sim, input_data_dir, reference_data_dir):
     # changes the number of cells).
     raw_shape = npy_shape(sim["raw_data_path"])
     if raw_shape is None:
-        # we cannot read the raw .npy file -> we cannot verify the output shapes, better to (re)process
         return False
     n_rows, nt_raw = raw_shape
-    nt_new = len(range(0, nt_raw, STRIDE))          # nt after temporal subsampling
-    expected_shape = (n_rows, nt_new)
+    n_cells_check = n_rows // N_FEATURES
+    nt_new = len(range(0, nt_raw, STRIDE))
+
+    expected_tensor_shape = (n_cells_check, N_FEATURES, nt_new)
+    expected_initial_shape = (n_cells_check, N_FEATURES)      # singolo snapshot
 
     if split == "train":
         state_shape = npz_shape(os.path.join(sim_input_dir, "state.npz"))
-        phi_shape = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
-        return state_shape == expected_shape and phi_shape == (nt_new,)
+        phi_shape   = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
+        return state_shape == expected_tensor_shape and phi_shape == (nt_new,)
     else:
         initial_shape = npz_shape(os.path.join(sim_input_dir, "initial_state.npz"))
-        phi_shape = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
-        ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
-        full_shape = npz_shape(os.path.join(ref_sim_dir, "state_full.npz"))
-        return (initial_shape == (n_rows,)
+        phi_shape     = npz_shape(os.path.join(sim_input_dir, "phi.npz"))
+        ref_sim_dir   = os.path.join(reference_data_dir, split, sim["name"])
+        full_shape    = npz_shape(os.path.join(ref_sim_dir, "state_full.npz"))
+        return (initial_shape == expected_initial_shape
                 and phi_shape == (nt_new,)
-                and full_shape == expected_shape)
+                and full_shape == expected_tensor_shape)
 
 # =============================================================================
 # 4) MAIN
@@ -265,23 +281,24 @@ def main():
         os.makedirs(sim_input_dir, exist_ok=True)
 
         if split == "train":
-            # pass-through, solo sottocampionamento temporale (nessun resampling spaziale)
-            state = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
+            raw = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
+            state = reshape_to_tensor(raw, N_FEATURES, n_cells)
             np.savez_compressed(os.path.join(sim_input_dir, "state.npz"), data=state)
             np.savez_compressed(os.path.join(sim_input_dir, "phi.npz"), data=phi.astype(np.float32))
+            print(f"  -> raw nt={raw_shape[1]} -> state shape: {state.shape}, phi shape: {phi.shape}, split={split}")
+
         else:
-            # participants only ever see the initial snapshot + full phi
-            DataMatrix = np.load(sim["raw_data_path"], mmap_mode='r')  # do not load all into RAM
-            np.savez_compressed(os.path.join(sim_input_dir, "initial_state.npz"), data=np.array(DataMatrix[:, 0], dtype=np.float32))
+            DataMatrix = np.load(sim["raw_data_path"], mmap_mode='r')
+            initial_tensor = reshape_to_tensor(np.array(DataMatrix[:, 0:1], dtype=np.float32), N_FEATURES, n_cells)[:, :, 0]
+            np.savez_compressed(os.path.join(sim_input_dir, "initial_state.npz"), data=initial_tensor)
             np.savez_compressed(os.path.join(sim_input_dir, "phi.npz"), data=phi.astype(np.float32))
 
-            # ground truth goes ONLY into reference_data, never into input_data
             ref_sim_dir = os.path.join(reference_data_dir, split, sim["name"])
             os.makedirs(ref_sim_dir, exist_ok=True)
-            state_full = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
+            raw_full = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
+            state_full = reshape_to_tensor(raw_full, N_FEATURES, n_cells)
             np.savez_compressed(os.path.join(ref_sim_dir, "state_full.npz"), data=state_full)
-
-        print(f"  -> raw nt={raw_shape[1]} -> subsampled nt={nt_new}, phi {phi.shape}, split={split}")
+            print(f"  -> raw nt={raw_shape[1]} -> state_full shape: {state_full.shape}, initial shape: {initial_tensor.shape}, phi shape: {phi.shape}, split={split}")
 
     print("\nDone. You can now zip bundle/ (input_data and reference_data "
           "included) and upload it to Codabench, or use it for local testing.")

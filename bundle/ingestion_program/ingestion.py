@@ -20,36 +20,36 @@
 # ├── xyz.npz                      shared cells coordinates matrix (n_cells, 3)
 # ├── train
 # │   ├── sineSweep_A02
-# │   │   ├── state.npz            shape (n_features * n_cells, n_timesteps)
+# │   │   ├── state.npz            shape (n_cells, n_features, n_timesteps)
 # │   │   └── phi.npz              shape (n_timesteps,)
 # │   └── sineSweep_A04
-# │       ├── state.npz            shape (n_features * n_cells, n_timesteps)
+# │       ├── state.npz            shape (n_cells, n_features, n_timesteps)
 # │       └── phi.npz              shape (n_timesteps,)
 # ├── valid
 # │   ├── sineSweep_A02
-# │   │   ├── initial_state.npz    shape (n_features * n_cells,)
+# │   │   ├── initial_state.npz    shape (n_cells, n_features)
 # │   │   └── phi.npz              shape (n_timesteps,)
 # │   └── sineSweep_A04
-# │       ├── initial_state.npz    shape (n_features * n_cells,)
+# │       ├── initial_state.npz    shape (n_cells, n_features)
 # │       └── phi.npz              shape (n_timesteps,)
 # └── test
 #     ├── step_A03
-#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   ├── initial_state.npz    shape (n_cells, n_features)
 #     │   └── phi.npz              shape (n_timesteps,)
 #     ├── step_A05
-#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   ├── initial_state.npz    shape (n_cells, n_features)
 #     │   └── phi.npz              shape (n_timesteps,)
 #     ├── sine_f10_A03
-#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   ├── initial_state.npz    shape (n_cells, n_features)
 #     │   └── phi.npz              shape (n_timesteps,)
 #     ├── sine_f10_A05
-#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   ├── initial_state.npz    shape (n_cells, n_features)
 #     │   └── phi.npz              shape (n_timesteps,)
 #     ├── sine_f40_A03
-#     │   ├── initial_state.npz    shape (n_features * n_cells,)
+#     │   ├── initial_state.npz    shape (n_cells, n_features)
 #     │   └── phi.npz              shape (n_timesteps,)
 #     └── sine_f40_A05
-#         ├── initial_state.npz    shape (n_features * n_cells,)
+#         ├── initial_state.npz    shape (n_cells, n_features)
 #         └── phi.npz              shape (n_timesteps,)
 
 #
@@ -63,7 +63,7 @@
 #    data_folder is the path to the "train" folder above.
 # 2. fit(self, D) -> None
 #    trains the model in place using D.
-# 3. predict(self, test_data_folder) -> numpy array, shape (n_features * n_cells, n_timesteps)
+# 3. predict(self, test_data_folder) -> numpy array, shape (n_cells, n_features, n_timesteps)
 #    test_data_folder is the path to ONE valid/ or test/ simulation folder.
 # ----------------------------------------------------------------------------
 

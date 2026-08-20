@@ -240,6 +240,7 @@ sample_code_submission/model_*.py
 organizer_scripts/RUN.sh
 organizer_scripts/logs
 organizer_scripts/prepare_uniform_data.py
+organizer_scripts/check_shapes.py
 
 cypher_*.zip
 cypher_2026_bundle_try*.zip
@@ -253,3 +254,5 @@ ref_*.zip
 
 ingestion_*.zip
 scoring_*.zip
+
+sample_code_submission_*.zip

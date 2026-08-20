@@ -139,18 +139,20 @@ if __name__ == "__main__":
         with open(os.path.join(res_sim_dir, 'inference_time.txt'), 'r') as f:
             inference_time = float(f.read())
 
-        if state_pred.shape[1] != state_true.shape[1]:
+        print(f' state pred shape: {state_pred.shape}')
+        print(f' state true shape: {state_true.shape}')
+        if state_pred.shape[2] != state_true.shape[2]:
             raise RuntimeError(
                 f"Simulation '{sim_name}': prediction has "
-                f"{state_pred.shape[1]} time steps, expected "
-                f"{state_true.shape[1]}. Your predict() method must return "
+                f"{state_pred.shape[2]} time steps, expected "
+                f"{state_true.shape[2]}. Your predict() method must return "
                 "a forecast covering the whole horizon given by phi.npz."
             )
 
         nrmse_sim, _, _ = compute_nrmse_field(state_true, state_pred, n_features)
         nrmse_list.append(nrmse_sim)
 
-        n_timesteps = state_true.shape[1]
+        n_timesteps = state_true.shape[2]
         inference_time_per_snapshot_list.append(inference_time / n_timesteps)
 
         if verbose:
