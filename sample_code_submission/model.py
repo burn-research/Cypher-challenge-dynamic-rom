@@ -77,19 +77,19 @@ class model:
         ----------
         test_data_folder : str
             Path to ONE validation/test simulation folder, containing
-            initial_state.npz (shape (n_features * n_cells,)) and
+            initial_state.npz (shape (n_cells, n_features,)) and
             phi.npz (shape (n_timesteps,), the full known forcing signal).
 
         Returns
         -------
-        state_pred : ndarray, shape (n_features * n_cells, n_timesteps)
+        state_pred : ndarray, shape (n_cells, n_features, n_timesteps)
             Forecast of the full flow state at every time step. Column 0 must
             equal initial_state.npz.
         """
         initial_state = np.load(f"{test_data_folder}/initial_state.npz")['data']
         phi = np.load(f"{test_data_folder}/phi.npz")['data']
 
+        n_cells, n_features = initial_state.shape          # [N_cells, N_features]
         n_timesteps = phi.shape[0]
-        state_pred = np.tile(initial_state.reshape(-1, 1), (1, n_timesteps))
-
+        state_pred = np.tile(initial_state[:, :, np.newaxis], (1, 1, n_timesteps))
         return state_pred

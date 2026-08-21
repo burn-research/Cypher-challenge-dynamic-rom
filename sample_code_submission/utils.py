@@ -49,7 +49,7 @@ def load_simulation(sim_folder):
 
     Returns
     -------
-    state : ndarray, shape (n_features * n_cells, n_timesteps)
+    state : ndarray, shape (n_cells, n_features, n_timesteps)
     phi   : ndarray, shape (n_timesteps,)
     """
     state = np.load(os.path.join(sim_folder, 'state.npz'))['data']
@@ -64,7 +64,7 @@ def load_test_simulation(sim_folder):
 
     Returns
     -------
-    initial_state : ndarray, shape (n_features * n_cells,)
+    initial_state : ndarray, shape (n_cells, n_features)
     phi           : ndarray, shape (n_timesteps,) -- known future forcing signal
     """
     initial_state = np.load(os.path.join(sim_folder, 'initial_state.npz'))['data']
@@ -82,9 +82,11 @@ def build_one_step_pairs(state, phi):
     i.e. "given where I am now and how the forcing changes, predict the
     next state". Returned arrays have (n_timesteps - 1) rows.
     """
-    X_state = state[:, :-1].T
-    phi_t = phi[:-1].reshape(-1, 1)
+    n_cells, n_features, n_t = state.shape
+    state_flat = state.reshape(n_cells * n_features, n_t)  # [N_cells*N_features, N_t]
+    X_state = state_flat[:, :-1].T                          # [N_t-1, N_cells*N_features]
+    phi_t   = phi[:-1].reshape(-1, 1)
     phi_tp1 = phi[1:].reshape(-1, 1)
-    X = np.hstack([X_state, phi_t, phi_tp1])
-    Y = state[:, 1:].T
+    X = np.hstack([X_state, phi_t, phi_tp1])               # [N_t-1, N_cells*N_features + 2]
+    Y = state_flat[:, 1:].T                                 # [N_t-1, N_cells*N_features]
     return X.astype(np.float32), Y.astype(np.float32)

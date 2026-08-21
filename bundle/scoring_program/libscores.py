@@ -59,20 +59,24 @@ def compute_nrmse_field(state_true, state_pred, n_features,
             f"ground truth {state_true.shape}."
         )
 
-    n_rows, n_timesteps = state_true.shape
-    if n_rows % n_features != 0:
+    # shape attesa: [n_cells, n_features, n_timesteps]
+    if state_true.ndim != 3:
         raise ValueError(
-            f"Number of rows ({n_rows}) is not divisible by "
-            f"n_features ({n_features})."
+            f"Expected 3D array [n_cells, n_features, n_timesteps], "
+            f"got shape {state_true.shape}."
         )
-    n_cells = n_rows // n_features
+    n_cells, n_features_actual, n_timesteps = state_true.shape
+    if n_features_actual != n_features:
+        raise ValueError(
+            f"Array has {n_features_actual} features along axis 1, "
+            f"but n_features={n_features} was passed."
+        )
 
-    # reshape to (n_features, n_cells, n_timesteps)
-    true_r = state_true.reshape(n_features, n_cells, n_timesteps)
-    pred_r = state_pred.reshape(n_features, n_cells, n_timesteps)
+    true_r = state_true.transpose(1, 0, 2)   # [n_features, n_cells, n_timesteps]
+    pred_r = state_pred.transpose(1, 0, 2)
 
-    mean = np.mean(true_r, axis=(1, 2))   # shape (n_features,)
-    std = np.std(true_r, axis=(1, 2), ddof=1)
+    mean = np.mean(true_r, axis=(1, 2))      # [n_features,]
+    std  = np.std(true_r,  axis=(1, 2), ddof=1)
 
     mask_eliminate = (np.abs(mean) < eps_mean) & (std < eps_std)
     mask = ~mask_eliminate
