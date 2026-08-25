@@ -58,37 +58,35 @@ assert abs(STRIDE * RAW_DT - TARGET_DT) < 1e-12, \
 
 
 RAW_SIMULATIONS = [
-    dict(name="sineSweep_f1_f80_A02", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A02.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sineSweep_f1_f80_A02", raw_data_path="../../Data/sineSweep_f1_f80_A02.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="train", signal="sweep", A=0.2, f=None, dt=RAW_DT, t0=0.0),
-    dict(name="sineSweep_f1_f80_A04", raw_data_path="/globalscratch/baffetti/hackaton/Data/sineSweep_f1_f80_A04.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sineSweep_f1_f80_A04", raw_data_path="../../Data/sineSweep_f1_f80_A04.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="train", signal="sweep", A=0.4, f=None, dt=RAW_DT, t0=0.0),
-
-    dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="step_A03", raw_data_path="../../Data/step_A03.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="valid", signal="step", A=0.3, f=None, dt=RAW_DT, t0=0.0),
-    dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sine_f40_A05", raw_data_path="../../Data/sine_f40_A05.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="valid", signal="sine", A=0.5, f=40.0, dt=RAW_DT, t0=0.0),
-
-    dict(name="step_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="step_A03", raw_data_path="../../Data/step_A03.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="test", signal="step", A=0.3, f=None, dt=RAW_DT, t0=0.0),
-    dict(name="step_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/step_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="step_A05", raw_data_path="../../Data/step_A05.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="test", signal="step", A=0.5, f=None, dt=RAW_DT, t0=0.0),
-    dict(name="sine_f10_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sine_f10_A03", raw_data_path="../../Data/sine_f10_A03.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="test", signal="sine", A=0.3, f=10.0, dt=RAW_DT, t0=0.0),
-    dict(name="sine_f10_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f10_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sine_f10_A05", raw_data_path="../../Data/sine_f10_A05.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="test", signal="sine", A=0.5, f=10.0, dt=RAW_DT, t0=0.0),
-    dict(name="sine_f40_A03", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A03.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sine_f40_A03", raw_data_path="../../Data/sine_f40_A03.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="test", signal="sine", A=0.3, f=40.0, dt=RAW_DT, t0=0.0),
-    dict(name="sine_f40_A05", raw_data_path="/globalscratch/baffetti/hackaton/Data/sine_f40_A05.npy",
-         raw_grid_path="/globalscratch/baffetti/hackaton/Data/grid_0_0 6.vtu",
+    dict(name="sine_f40_A05", raw_data_path="../../Data/sine_f40_A05.npy",
+         raw_grid_path="../../Data/grid_0_0 6.vtu",
          split="test", signal="sine", A=0.5, f=40.0, dt=RAW_DT, t0=0.0),
 ]
 
@@ -254,6 +252,11 @@ def main():
         n_cells = npz_shape(xyz_path)[0]
         print(f"Grid already present: {n_cells} cells")
 
+    for phase in ["valid", "test"]:
+        phase_ref_dir = os.path.join(reference_data_dir, phase)
+        os.makedirs(phase_ref_dir, exist_ok=True)
+        shutil.copy2(raw_grid_path, os.path.join(phase_ref_dir, "grid.vtu"))
+
     meta = {"n_features": N_FEATURES, "features": FEATURES, "n_cells": n_cells}
     for phase in ["valid", "test"]:
         phase_ref_dir = os.path.join(reference_data_dir, phase)
@@ -298,6 +301,7 @@ def main():
             raw_full = np.load(sim["raw_data_path"])[:, ::STRIDE].astype(np.float32)
             state_full = reshape_to_tensor(raw_full, N_FEATURES, n_cells)
             np.savez_compressed(os.path.join(ref_sim_dir, "state_full.npz"), data=state_full)
+            np.savez_compressed(os.path.join(ref_sim_dir, "phi.npz"), data=phi.astype(np.float32))  # ← aggiungi questa
             print(f"  -> raw nt={raw_shape[1]} -> state_full shape: {state_full.shape}, initial shape: {initial_tensor.shape}, phi shape: {phi.shape}, split={split}")
 
     print("\nDone. You can now zip bundle/ (input_data and reference_data "

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Ingestion program for the CYPHER 2026 dynamic ROM challenge.
-# Adapted from the CYPHER 2025 DNS challenge (Lorenzo Piu, ULB, May 2025),
+# Written by the organizers (Tommaso Baffetti, Alberto Procacci, ULB, 2026).
+
 # itself adapted from the Codabench "iris" example bundle:
 # https://github.com/codalab/competition-examples/tree/master/codabench/iris
 

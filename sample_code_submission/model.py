@@ -1,5 +1,6 @@
 """
 Sample predictive model for the CYPHER 2026 dynamic ROM challenge.
+Written by the organizers (Tommaso Baffetti, Alberto Procacci, ULB, 2026).
 
 Your submitted model.py must define a class named `model` implementing
 3 methods: preprocess(), fit(), predict(). See the "Submission" page of the
