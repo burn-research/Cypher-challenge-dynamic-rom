@@ -1,9 +1,13 @@
 #%%
+import sys
+from pathlib import Path
 import numpy as np
-from utils import load_simulation
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sample_code_submission"))
+from utils import list_training_simulations, load_simulation
 
 sim_name = 'sineSweep_f1_f80_A04'
-path_train = '../input_data/train'
+path_train = '../bundle/data_directory/train'
 state_train, phi_train = load_simulation(f"{path_train}/{sim_name}")
 print(f"Loaded '{sim_name}': state {state_train.shape}, phi {phi_train.shape}")
 
@@ -51,7 +55,7 @@ def plot_snapshot_hor(mesh, z, normal, origin, axis, feature, cmap='viridis', fi
 
     plt.show()
 
-grid = pv.read('../input_data/grid.vtu')
+grid = pv.read('../bundle/data_directory/grid.vtu')
 
 n_cells = state_train.shape[0]
 n_features = state_train.shape[1]
@@ -67,7 +71,6 @@ i_test = 200
 
 plot_snapshot_hor(grid, state_train[:, i_plot, i_test],
                   (0, 1, 0), (0, 0, 0), (0, 2), features[i_plot], cmap='inferno')
-
 
 #%%
 
@@ -116,3 +119,25 @@ for t in range(time.size//step):
 plotter.close()
 print("Saved animation.")
 # %%
+
+def integrate_Q(Q, grid):
+    tmp = grid.compute_cell_sizes(
+        length=False,
+        area=True,
+        volume=True
+    )
+
+    weights = tmp.cell_data["Volume"]
+    Q_integrated = weights @ Q
+
+    return Q_integrated
+
+Q_train = state_train[:, features.index('mix:Q'), :]
+Q_train_int = integrate_Q(Q_train, grid)
+
+plt.plot(time, Q_train_int, label='Training')
+
+plt.xlabel('Time step')
+plt.ylabel('Integrated Q')
+plt.legend()    
+plt.show()
