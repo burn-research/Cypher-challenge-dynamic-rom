@@ -35,6 +35,7 @@ import torch
 import tensorflow
 import sklearn
 import pandas
+import zarr
 
 from utils import list_training_simulations, load_simulation
 
@@ -87,8 +88,8 @@ class model:
             Forecast of the full flow state at every time step. Column 0 must
             equal initial_state.npz.
         """
-        initial_state = np.load(f"{test_data_folder}/initial_state.npz")['data']
-        phi = np.load(f"{test_data_folder}/phi.npz")['data']
+        initial_state = zarr.open(f"{test_data_folder}/initial_state.zarr", mode='r')[:]
+        phi           = zarr.open(f"{test_data_folder}/phi.zarr",           mode='r')[:]
 
         n_cells, n_features = initial_state.shape          # [N_cells, N_features]
         n_timesteps = phi.shape[0]

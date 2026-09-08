@@ -9,6 +9,7 @@ a convenience starting point for your own submission.
 import os
 import random
 import numpy as np
+import zarr
 
 
 def set_global_seed(seed: int):
@@ -52,8 +53,8 @@ def load_simulation(sim_folder):
     state : ndarray, shape (n_cells, n_features, n_timesteps)
     phi   : ndarray, shape (n_timesteps,)
     """
-    state = np.load(os.path.join(sim_folder, 'state.npz'))['data']
-    phi = np.load(os.path.join(sim_folder, 'phi.npz'))['data']
+    state = zarr.open(os.path.join(sim_folder, 'state.zarr'), mode='r')[:]
+    phi   = zarr.open(os.path.join(sim_folder, 'phi.zarr'),   mode='r')[:]
     return state, phi
 
 
@@ -67,8 +68,8 @@ def load_test_simulation(sim_folder):
     initial_state : ndarray, shape (n_cells, n_features)
     phi           : ndarray, shape (n_timesteps,) -- known future forcing signal
     """
-    initial_state = np.load(os.path.join(sim_folder, 'initial_state.npz'))['data']
-    phi = np.load(os.path.join(sim_folder, 'phi.npz'))['data']
+    initial_state = zarr.open(os.path.join(sim_folder, 'initial_state.zarr'), mode='r')[:]
+    phi           = zarr.open(os.path.join(sim_folder, 'phi.zarr'),           mode='r')[:]
     return initial_state, phi
 
 
