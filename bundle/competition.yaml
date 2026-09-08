@@ -110,30 +110,38 @@ leaderboards:
   key: Results
   submission_rule: "Force_Best"
   columns:
-  - title: Overall score
+  - title: Overall Score
     key: score
     index: 0
-    sorting: asc
+    sorting: desc
     computation: null
     computation_indexes: null
-  - title: NRMSE
-    key: NRMSE
+    numeric_format: 6
+  - title: NRMSE Score
+    key: score_nrmse
     index: 1
     sorting: asc
     computation: null
     computation_indexes: null
-    numeric_format: 5
-  - title: Inference time [s / snapshot]
-    key: time_inference
+    numeric_format: 6
+  - title: Gain Score
+    key: score_gain
     index: 2
-    sorting: asc
+    sorting: desc
     computation: null
     computation_indexes: null
-    numeric_format: 5
-  - title: Training time [s]
-    key: time_training
+    numeric_format: 6
+  - title: Phase Score
+    key: score_phase
     index: 3
-    sorting: asc
+    sorting: desc
     computation: null
     computation_indexes: null
-    numeric_format: 2
+    numeric_format: 6
+  - title: Time Score
+    key: score_time
+    index: 4
+    sorting: desc
+    computation: null
+    computation_indexes: null
+    numeric_format: 6
