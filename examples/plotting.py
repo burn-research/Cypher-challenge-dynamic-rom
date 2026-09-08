@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sample_code_submission"))
 from utils import list_training_simulations, load_simulation
@@ -11,11 +13,17 @@ path_train = '../bundle/data_directory/train'
 state_train, phi_train = load_simulation(f"{path_train}/{sim_name}")
 print(f"Loaded '{sim_name}': state {state_train.shape}, phi {phi_train.shape}")
 
+dt = 2e-3
+time_train = np.arange(0, state_train.shape[2], dtype=np.float32)*dt
+fig, ax = plt.subplots(figsize=(4, 2.3))
+ax.plot(time_train, phi_train)
+ax.set_xlabel('Time step')
+ax.set_ylabel('Phi')
+fig.savefig(f'phi_{sim_name}.png', dpi=300, bbox_inches='tight')
+plt.show()
 
 #%%
 import pyvista as pv
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 
 def plot_snapshot_hor(mesh, z, normal, origin, axis, feature, cmap='viridis', filename=''):
     mesh['z'] = z
@@ -118,6 +126,7 @@ for t in range(time.size//step):
 
 plotter.close()
 print("Saved animation.")
+
 # %%
 
 def integrate_Q(Q, grid):
@@ -141,3 +150,19 @@ plt.xlabel('Time step')
 plt.ylabel('Integrated Q')
 plt.legend()    
 plt.show()
+
+# %%
+
+time_test = np.arange(0, 501, dtype=np.float32)*dt
+phi_test_sin = 1+0.3*np.sin(2*np.pi*10*time_test)
+phi_test_step = 1+0.3*np.ones_like(time_test)
+phi_test_step[0] = 1.0
+fig, ax = plt.subplots(figsize=(4, 2.3))
+# ax.plot(time_train, phi_train, label='Training', c='tab:blue', alpha=0.5)
+ax.plot(time_test, phi_test_sin, label='Sine', c='tab:blue', ls='--')
+ax.plot(time_test, phi_test_step, label='Step', c='tab:blue')
+ax.set_xlabel('Time step')
+ax.set_ylabel('Phi')
+fig.savefig(f'phi_test.png', dpi=300, bbox_inches='tight')
+plt.show()
+# %%
