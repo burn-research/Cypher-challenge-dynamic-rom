@@ -2,13 +2,13 @@
 
 <p>
 The data comes from CFD simulations of 2D transient laminar coflow diffusion
-flames burning a CH4 and N2 mixture in air, with pulsed/forced inlet velocity.
+flames burning a CH4 and N2 mixture in air, with changing inlet velocity.
 All fields are provided on a common unstructered grid.vtu (pyvista format) and
 a corresponding xyz.npy file with the coordinates of the grid cells.
 </p>
 
 <h2>Flow variables</h2>
-<p>At every grid cell and time step, the following 11 variables are available (stacked in this exact order in <code>state.npy</code>):</p>
+<p>At every grid cell and time step, the following 11 variables are available:</p>
 <table border="1" cellpadding="6" cellspacing="0">
 <tr><th>#</th><th>Name</th><th>Description</th></tr>
 <tr><td>0</td><td><code>p</code></td><td>pressure</td></tr>
@@ -28,7 +28,7 @@ a corresponding xyz.npy file with the coordinates of the grid cells.
 <p>
 The inlet velocity profile is modulated in time by a scalar forcing signal
 &phi;(t). The bulk inlet velocity at time t is <code>U(t) = U_base &middot;
-&phi;(t)</code>. U_base = 0.35 m/s while &phi;(t) is provided to you explicitly, alongside the flow
+&phi;(t)</code>. U_base = 0.70 m/s while &phi;(t) is provided to you explicitly, alongside the flow
 state, as an additional input at every time step.
 </p>
 
@@ -63,10 +63,8 @@ for T &le; t &le; 2T : &psi;(t) = &psi;(T) + (2&pi;f&#8321;/k)(1 &minus; e<sup>&
 <h2>File format</h2>
 <p>Every simulation is stored as a folder containing:</p>
 <ul>
-  <li><code>state.npy</code> &mdash; array of shape <code>(n_features * n_cells, n_timesteps)</code>,
-  the flattened flow state at every time step (features stacked in the order
-  listed above, each block of <code>n_cells</code> rows corresponding to
-  one feature, in the cell order given by grid.vtu/xyz.npy).</li>
+  <li><code>state.npy</code> &mdash; array of shape <code>( n_cells, n_features, n_timesteps)</code>.
+  The cell order is given by grid.vtu/xyz.npy).</li>
   <li><code>phi.npy</code> &mdash; array of shape <code>(n_timesteps,)</code>,
   the forcing signal value at every time step.</li>
 </ul>
@@ -75,25 +73,25 @@ Two shared files describe the spatial mesh: <code>xyz.npy</code> (shape
 <code>(n_cells, 3)</code>, columns x, y, z — cell-center coordinates) and
 <code>grid.vtu</code> (the raw unstructured mesh, readable with pyvista),
 in case you want to exploit the spatial structure of the domain (e.g. convolutional
-architectures). The time step is constant and equal to <code>dt = 5e-4 s</code>
+architectures). The time step is constant and equal to <code>dt = 2e-3 s</code>
 in every simulation.
 </p>
 
 <h3>Dataset dimensions</h3>
 <table border="1" cellpadding="6" cellspacing="0">
 <tr><th>Quantity</th><th>Value</th></tr>
-<tr><td>n_features</td><td>11</td></tr>
 <tr><td>n_cells</td><td>21334</td></tr>
-<tr><td>n_features &middot; n_cells (rows of <code>state.npy</code>)</td><td>234674</td></tr>
-<tr><td>dt (time step)</td><td>5&middot;10<sup>-4</sup> s (0.5 ms)</td></tr>
+<tr><td>n_features</td><td>11</td></tr>
+<tr><td>n_steps</td><td>1001/501</td></tr>
+<tr><td>dt (time step)</td><td>2&middot;10<sup>-3</sup> s (2.0 ms)</td></tr>
 </table>
 
 <h2>Training data</h2>
 <p>Two sine-sweep (chirp) simulations, 1 Hz &rarr; 80 Hz &rarr; 1 Hz over 2 s, at two amplitudes:</p>
 <table border="1" cellpadding="6" cellspacing="0">
 <tr><th>Folder</th><th>&phi; type</th><th>A</th><th>n_timesteps</th><th>Duration</th></tr>
-<tr><td><code>train/sineSweep_f1_f80_A02</code></td><td>sweep</td><td>0.2</td><td>4001</td><td>2.0 s</td></tr>
-<tr><td><code>train/sineSweep_f1_f80_A04</code></td><td>sweep</td><td>0.4</td><td>4001</td><td>2.0 s</td></tr>
+<tr><td><code>train/sineSweep_f1_f80_A02</code></td><td>sweep</td><td>0.2</td><td>1001</td><td>2.0 s</td></tr>
+<tr><td><code>train/sineSweep_f1_f80_A04</code></td><td>sweep</td><td>0.4</td><td>1001</td><td>2.0 s</td></tr>
 </table>
 
 <h2>Validation data (Development phase feedback)</h2>
@@ -104,8 +102,8 @@ never the ground-truth evolution of the state.
 </p>
 <table border="1" cellpadding="6" cellspacing="0">
 <tr><th>Folder</th><th>&phi; type</th><th>A</th><th>f</th><th>n_timesteps</th><th>Duration</th></tr>
-<tr><td><code>valid/step_A03</code></td><td>step</td><td>0.3</td><td>&mdash;</td><td>2001</td><td>1.0 s</td></tr>
-<tr><td><code>valid/sine_f40_A05</code></td><td>sine</td><td>0.5</td><td>40 Hz</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>valid/step_A03</code></td><td>step</td><td>0.3</td><td>&mdash;</td><td>501</td><td>1.0 s</td></tr>
+<tr><td><code>valid/sine_f40_A05</code></td><td>sine</td><td>0.5</td><td>40 Hz</td><td>501</td><td>1.0 s</td></tr>
 </table>
 
 <h2>Final test data</h2>
@@ -116,12 +114,12 @@ the ground-truth trajectories.
 </p>
 <table border="1" cellpadding="6" cellspacing="0">
 <tr><th>Folder</th><th>&phi; type</th><th>A</th><th>f</th><th>n_timesteps</th><th>Duration</th></tr>
-<tr><td><code>test/step_A03</code></td><td>step</td><td>0.3</td><td>&mdash;</td><td>2001</td><td>1.0 s</td></tr>
-<tr><td><code>test/step_A05</code></td><td>step</td><td>0.5</td><td>&mdash;</td><td>2001</td><td>1.0 s</td></tr>
-<tr><td><code>test/sine_f10_A03</code></td><td>sine</td><td>0.3</td><td>10 Hz</td><td>2001</td><td>1.0 s</td></tr>
-<tr><td><code>test/sine_f10_A05</code></td><td>sine</td><td>0.5</td><td>10 Hz</td><td>2001</td><td>1.0 s</td></tr>
-<tr><td><code>test/sine_f40_A03</code></td><td>sine</td><td>0.3</td><td>40 Hz</td><td>2001</td><td>1.0 s</td></tr>
-<tr><td><code>test/sine_f40_A05</code></td><td>sine</td><td>0.5</td><td>40 Hz</td><td>2001</td><td>1.0 s</td></tr>
+<tr><td><code>test/step_A03</code></td><td>step</td><td>0.3</td><td>&mdash;</td><td>501</td><td>1.0 s</td></tr>
+<tr><td><code>test/step_A05</code></td><td>step</td><td>0.5</td><td>&mdash;</td><td>501</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f10_A03</code></td><td>sine</td><td>0.3</td><td>10 Hz</td><td>501</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f10_A05</code></td><td>sine</td><td>0.5</td><td>10 Hz</td><td>501</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f40_A03</code></td><td>sine</td><td>0.3</td><td>40 Hz</td><td>501</td><td>1.0 s</td></tr>
+<tr><td><code>test/sine_f40_A05</code></td><td>sine</td><td>0.5</td><td>40 Hz</td><td>501</td><td>1.0 s</td></tr>
 </table>
 
 <h2>What you will never see</h2>

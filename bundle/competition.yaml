@@ -8,12 +8,12 @@ version: 2
 title: "CYPHER 2026: Hackathon on Reduced-Order Modeling for Advanced Combustion Systems"
 description: >
   Development of a data-driven reduced-order model of a reactive dynamical system.
-image: images/robot_logo.png
+image: images/hackathon_logo.jpg
 registration_auto_approve: True
 # NOTE: this image already contains numpy/scipy/scikit-learn/pytorch/tensorflow,
 # inherited from the previous CYPHER challenge. See the "Docker image" section
 # of the organizer README before changing it.
-docker_image: 'tommasobaffetti/cypher2026-hackaton-image:v1'
+docker_image: 'tommasobaffetti/cypher2026-hackaton-image:v2'
 contact_email: tommaso.baffetti@ulb.be
 make_input_data_available: True
 make_programs_available: True

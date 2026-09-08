@@ -6,7 +6,7 @@ that defines a class named <code>model</code>. Any additional Python module
 you need can be added to the archive (e.g. helper files), but no pretrained
 weights or extra data are allowed. The <code>sample_code_submission.zip</code>
 available on the "Files" tab of this competition shows the expected
-structure and a minimal working baseline.
+structure and a minimal working baseline. Note: When creating your ZIP archive, include the files themselves rather than the directory that contains them. Otherwise, the submission will fail.
 </p>
 
 <h2>Required interface</h2>
@@ -42,4 +42,9 @@ you &mdash; the only constraint is the three-method interface above.
 Each submission (preprocessing + training + inference on all
 validation/test simulations) has a maximum execution time budget of 6 hours
 on the challenge infrastructure.
+</p>
+
+<h2>RAM limitations</h2>
+<p>
+Because the CodaBench worker has limited RAM, please verify that your model's memory usage remains below 10 GB. Submissions exceeding this limit will not run successfully.
 </p>

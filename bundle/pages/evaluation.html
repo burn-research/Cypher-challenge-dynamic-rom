@@ -20,9 +20,10 @@ This competition allows you to submit a prediction model that must be trained
 and tested.
 </p>
 
-<h2>Metric</h2>
+<h2>Metrics</h2>
 <p>
-The main accuracy metric is the Normalized Root Mean Square Error (NRMSE),
+The score is given as a blend of accuracy, physical consistency and inference time.
+The accuracy metric is the Normalized Root Mean Square Error (NRMSE),
 computed independently for each of the 11 physical fields and then averaged.
 For a given field, over all grid cells and all forecasted time steps:
 </p>
@@ -34,16 +35,47 @@ where the standard deviation is computed over the ground-truth test/validation
 trajectory of that field. The NRMSE is first averaged over all time steps and
 grid cells for each field, then averaged across the 11 fields, then averaged
 across all simulations in the phase.
+<p>
+The physical consistency is measured by computing the phase and gain error of the flame transfer function. The flame transfer function $ H $ is defined as the ratio between $ \hat{Q} $ and $ \hat{\phi} $, where $ \hat{Q} $ is the Fourier transform of the volumetric integral of the heat release rate, and $ \hat{\phi} $ is the Fourier transform of the input perturbation. 
+</p>
+<p>
+The gain error is computed as
+</p>
+<p>	
+	<code> gain_error = gain_error = np.linalg.norm(np.abs(H_ture)-np.abs(H_pred)) / np.linalg.norm(np.abs(H_true))</code>
+</p>
+<p>
+while the phase error is 
+</p>
+<p>
+<code> phase_error = np.sqrt(np.mean(np.angle(H_pred * np.conj(H_ture))**2))</code>.
+</p>
+<p>
+The time inference penalty is computed as a sigmoid function that is around zero for an inference time of less than 10 s, and it becomes 1 for inference time greater than 10 s. For inference time we consider the time to predict the entire testing trajectory with a physical time of 1 s. The time error is computed as 
+</p>
+<p>
+<code> error_time = 1 / (1 + np.exp(-k * (time_array - time_reference)))</code> where k =1 and the reference time is 10 s.
+</p>
+
+<h2>Scores</h2>
+<p>
+The metrics are converted into scores as: <br>
+<code>
+Score_nrmse = 1/(1+nrmse_global) <br>
+Score_gain = 1/(1+gain_error) <br>
+Score_phase = 1-phase_error/np.pi <br>
+Score_time = 1/(1+error_time) <br>
+</code>
+to ensure that they are bound between 0 and 1.
 </p>
 
 <h2>Overall score</h2>
 <p>
-The leaderboard "Overall score" combines the forecasting accuracy (NRMSE)
-with a penalty on the per-snapshot inference time, to reward models that are
-both accurate and fast:
-</p>
-<p>
-<code>score = NRMSE + &beta; &middot; inference_time_per_snapshot</code>
+The overall score is a blend of the scores computed as: <br>
+<code>
+Score_global = 0.5*Score_nrmse + 0.25*Score_gain + 0.15*Score_phase + 0.1*Score_time
+</code> <br>
+where a value close to 0 represents a bad model while a score close to 1 represents a good model.
 </p>
 <p>
 Training time and inference time are also reported separately on the
