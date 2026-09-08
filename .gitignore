@@ -218,6 +218,7 @@ pyrightconfig.json
 bundle/input_data/grid.npy
 bundle/input_data/grid.npz
 bundle/input_data/grid*.vtu
+bundle/input_data/xyz.zarr
 bundle/input_data/xyz.npy
 bundle/input_data/xyz.npz
 bundle/input_data/test
@@ -245,6 +246,7 @@ organizer_scripts/RUN.sh
 organizer_scripts/logs
 organizer_scripts/prepare_uniform_data.py
 organizer_scripts/check_shapes.py
+organizer_scripts/prepare_data_npz.py
 
 cypher_*.zip
 cypher_2026_bundle_try*.zip
@@ -260,3 +262,7 @@ ingestion_*.zip
 scoring_*.zip
 
 sample_code_submission_*.zip
+how_to_run_like_codabench.txt
+organizer_scripts/find_MaxMin.py
+
+bundle/ingestion_program/ingestion_*.py

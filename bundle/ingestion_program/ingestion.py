@@ -87,7 +87,6 @@ default_input_dir = root_dir + "input_data"
 default_output_dir = root_dir + "sample_output_data"
 default_program_dir = root_dir + "ingestion_program"
 default_submission_dir = root_dir + "sample_code_submission"
-default_data_dir = root_dir + "data_directory"
 
 EVAL_PHASES = ["valid", "test"]   # both are always predicted; scoring picks the relevant one
 # ============================ END OPTIONS =====================================
@@ -101,6 +100,9 @@ import sys
 from sys import argv, path
 import datetime
 import numpy as np
+import gc
+import os
+import zarr
 
 the_date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 
@@ -129,7 +131,7 @@ if __name__ == "__main__" and debug_mode < 4:
     path.append(program_dir)
     path.append(submission_dir)
     import data_io
-    from data_io import vprint, show_version, cpdir, rmdir, mkdir
+    from data_io import vprint, show_version, mkdir
     from data_io import check_model_interface, process_training_time, time_limit
     from model import model
 
@@ -152,12 +154,6 @@ if __name__ == "__main__" and debug_mode < 4:
     time_budget = max_time if debug_mode < 1 else debug_time
     vprint(verbose, f"Time available for preprocessing + training: {time_budget} seconds")
 
-    # ---- Copy input data locally to avoid touching the original folder ----
-    vprint(verbose, "\nCopying input data directory...")
-    if os.path.exists(default_data_dir):
-        rmdir(default_data_dir)
-    cpdir(input_dir, default_data_dir)
-
     # ---- Initialize submitted model ---------------------------------------
     vprint(verbose, '\nInitializing model...')
     M = model()
@@ -171,7 +167,7 @@ if __name__ == "__main__" and debug_mode < 4:
     vprint(verbose, '========== MODEL TRAINING ==========')
     vprint(verbose, '====================================\n')
 
-    train_dir = os.path.join(default_data_dir, 'train')
+    train_dir = os.path.join(input_dir, 'train')
 
     with time_limit(time_budget):
         vprint(verbose, 'Preprocessing training data...')
@@ -195,7 +191,7 @@ if __name__ == "__main__" and debug_mode < 4:
     vprint(verbose, '===================================\n')
 
     for phase in EVAL_PHASES:
-        phase_input_dir = os.path.join(default_data_dir, phase)
+        phase_input_dir = os.path.join(input_dir, phase)
         if not os.path.isdir(phase_input_dir):
             vprint(verbose, f'No "{phase}" folder found in input data, skipping.')
             continue
@@ -218,18 +214,50 @@ if __name__ == "__main__" and debug_mode < 4:
 
             out_sim_dir = os.path.join(output_dir, phase, sim_name)
             mkdir(out_sim_dir)
-            np.savez_compressed(os.path.join(out_sim_dir, 'state_pred.npz'), data=state_pred)
+            zarr.save(os.path.join(out_sim_dir, 'state_pred.zarr'), state_pred)
             with open(os.path.join(out_sim_dir, 'inference_time.txt'), 'w') as f:
                 f.write(str(inference_time))
 
             tt, unit = process_training_time(inference_time)
             vprint(verbose,
                    f'  -> forecast shape {state_pred.shape}, done in {tt:.2f} {unit}')
+            del state_pred
+            gc.collect()
 
     overall_time_spent = time.time() - overall_start
 
     vprint(verbose, "\n[+] Done")
     vprint(verbose, "[+] Overall time spent %5.2f sec " % overall_time_spent +
            ":: Overall time budget for training %5.2f sec" % time_budget)
+    
+    gc.collect()
+
+    if debug_mode > 1:
+        # ── Contenuto e peso dell'output ─────────────────────────────────
+        # print("\n[DEBUG] Output directory contents:")
+        total_size = 0
+        for root, dirs, files in os.walk(output_dir):
+            for fname in files:
+                fpath = os.path.join(root, fname)
+                size = os.path.getsize(fpath)
+                total_size += size
+                #print(f"  {fpath}  ({size/1e6:.1f} MB)")
+        print(f"[DEBUG] Total output size: {total_size/1e6:.1f} MB  ({total_size/1e9:.2f} GB)")
+
+        # ── RAM disponibile via /proc/meminfo ────────────────────────────
+        with open('/proc/meminfo', 'r') as f:
+            meminfo = dict(line.split(':', 1) for line in f)
+        mem_total = int(meminfo['MemTotal'].strip().split()[0]) / 1e6  # GB
+        mem_avail = int(meminfo['MemAvailable'].strip().split()[0]) / 1e6
+        mem_used  = mem_total - mem_avail
+        print(f"[DEBUG] RAM used:      {mem_used:.2f} GB / {mem_total:.2f} GB")
+        print(f"[DEBUG] RAM available: {mem_avail:.2f} GB")
+
+        # ── Disco disponibile via os.statvfs ─────────────────────────────
+        st = os.statvfs(output_dir)
+        disk_free  = st.f_bavail * st.f_frsize / 1e9
+        disk_total = st.f_blocks * st.f_frsize / 1e9
+        disk_used  = disk_total - disk_free
+        print(f"[DEBUG] Disk used: {disk_used:.1f} GB / {disk_total:.1f} GB, free: {disk_free:.1f} GB")
 
     exit(0)

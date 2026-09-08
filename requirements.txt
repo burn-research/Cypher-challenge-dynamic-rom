@@ -3,3 +3,6 @@ pandas
 scikit-learn
 torch
 tensorflow
+pyvista
+zarr
+numcodecs

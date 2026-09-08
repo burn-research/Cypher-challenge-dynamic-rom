@@ -13,6 +13,7 @@ from sys import argv
 import numpy as np
 import time
 import math
+import zarr
 
 from libscores import (
     compute_nrmse_field,
@@ -118,6 +119,7 @@ if __name__ == "__main__":
         meta = json.load(f)
     n_features = meta['n_features']
 
+    """
     # ---- Grid cell volumes (needed for TF metrics) --------------------------
     # grid.vtu lives in the same phase folder as the reference data
     # (reference_data/valid/grid.vtu  or  reference_data/test/grid.vtu).
@@ -137,6 +139,13 @@ if __name__ == "__main__":
             "Place grid.vtu in the reference_data/valid/ and "
             "reference_data/test/ folders."
         )
+    """
+    
+    # ---- Grid cell volumes (needed for TF metrics) --------------------------
+    volumes_path = os.path.join(reference_data_dir, 'cell_volumes.zarr')
+    cell_volumes = zarr.open(volumes_path, mode='r')[:]
+    if verbose:
+        print(f'Loaded cell_volumes from {volumes_path} ({len(cell_volumes)} cells)')
 
     if verbose:
         print(f'\nScoring phase: {phase}')
@@ -151,6 +160,9 @@ if __name__ == "__main__":
     sim_names = sorted(
         d for d in os.listdir(reference_data_dir)
         if os.path.isdir(os.path.join(reference_data_dir, d))
+        and not d.startswith('.')
+        and not d.startswith('__')
+        and not d.endswith('.zarr')
     )
     if len(sim_names) == 0:
         raise RuntimeError(
@@ -166,23 +178,23 @@ if __name__ == "__main__":
         ref_sim_dir = os.path.join(reference_data_dir, sim_name)
         res_sim_dir = os.path.join(results_dir, phase, sim_name)
 
-        # ---- Ground-truth state ---------------------------------------------
-        state_true = np.load(
-            os.path.join(ref_sim_dir, "state_full.npz"))["data"]
+        # ---- Ground-truth state ---------------------------------------------        
+        state_true = zarr.open(
+            os.path.join(ref_sim_dir, "state_full.zarr"), mode='r')[:]
 
         # ---- Predicted state ------------------------------------------------
-        pred_path = os.path.join(res_sim_dir, 'state_pred.npz')
+        pred_path = os.path.join(res_sim_dir, 'state_pred.zarr')
         if not os.path.exists(pred_path):
             raise RuntimeError(
                 f"Missing prediction for simulation '{sim_name}' "
                 f"(expected file: {pred_path}). Did your predict() method "
                 "raise an error for this simulation?"
             )
-        state_pred = np.load(pred_path)['data']
+        state_pred = zarr.open(pred_path, mode='r')[:]
 
         # ---- Forcing signal (needed for TF metrics) -------------------------
-        phi_path = os.path.join(ref_sim_dir, 'phi.npz')
-        phi = np.load(phi_path)['data'] if os.path.exists(phi_path) else None
+        phi_path = os.path.join(ref_sim_dir, 'phi.zarr')
+        phi = zarr.open(phi_path, mode='r')[:] if os.path.exists(phi_path) else None
 
         # ---- Inference time -------------------------------------------------
         with open(os.path.join(res_sim_dir, 'inference_time.txt'), 'r') as f:
@@ -194,7 +206,7 @@ if __name__ == "__main__":
                 f"Simulation '{sim_name}': prediction has "
                 f"{state_pred.shape[2]} time steps, expected "
                 f"{state_true.shape[2]}. Your predict() method must return "
-                "a forecast covering the whole horizon given by phi.npz."
+                "a forecast covering the whole horizon given by phi.zarr"
             )
 
         # ---- NRMSE ----------------------------------------------------------
@@ -210,7 +222,7 @@ if __name__ == "__main__":
             )
         else:
             raise RuntimeError(
-                f"Missing phi.npz for simulation '{sim_name}' "
+                f"Missing phi.zarr for simulation '{sim_name}' "
                 f"in {ref_sim_dir}."
             )
         gain_error_list.append(gain_err)
@@ -305,3 +317,13 @@ if __name__ == "__main__":
         print("[+] Overall time spent %5.2f sec " % overall_time_spent)
 
     exit(0)
+
+    CLEANUP_AFTER_SCORING = True
+
+    if CLEANUP_AFTER_SCORING:
+        for sim_name in sim_names:
+            pred_path = os.path.join(results_dir, phase, sim_name, 'state_pred.zarr')
+            if os.path.exists(pred_path):
+                os.remove(pred_path)
+        if verbose:
+            print("[+] Cleaned up state_pred.zarr files")

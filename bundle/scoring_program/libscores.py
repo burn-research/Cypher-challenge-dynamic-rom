@@ -50,8 +50,8 @@ def compute_nrmse_field(state_true, state_pred, n_features,
     n_kept_features : int
         Number of features actually used in the average.
     """
-    state_true = np.asarray(state_true, dtype=np.float64)
-    state_pred = np.asarray(state_pred, dtype=np.float64)
+    state_true = np.asarray(state_true, dtype=np.float32) # prima era float64
+    state_pred = np.asarray(state_pred, dtype=np.float32) # prima era float64
 
     if state_true.shape != state_pred.shape:
         raise ValueError(
