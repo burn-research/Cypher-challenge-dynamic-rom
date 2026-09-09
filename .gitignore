@@ -266,3 +266,6 @@ how_to_run_like_codabench.txt
 organizer_scripts/find_MaxMin.py
 
 bundle/ingestion_program/ingestion_*.py
+
+bundle/ingestion_program/ingestion_*.py
+bundle/*_output_data
