@@ -17,47 +17,44 @@
 # Input data structure (input_dir):
 #
 # input_data
-# ├── grid.vtu                     shared unstructured grid, pyvista format
-# ├── xyz.npz                      shared cells coordinates matrix (n_cells, 3)
+# ├── grid.vtu                      shared unstructured grid, pyvista format
+# ├── xyz.zarr                      shared cells coordinates array (n_cells, 3)
 # ├── train
-# │   ├── sineSweep_A02
-# │   │   ├── state.npz            shape (n_cells, n_features, n_timesteps)
-# │   │   └── phi.npz              shape (n_timesteps,)
-# │   └── sineSweep_A04
-# │       ├── state.npz            shape (n_cells, n_features, n_timesteps)
-# │       └── phi.npz              shape (n_timesteps,)
+# │   ├── sineSweep_f1_f80_A02
+# │   │   ├── state.zarr            shape (n_cells, n_features, n_timesteps)
+# │   │   └── phi.zarr              shape (n_timesteps,)
+# │   └── sineSweep_f1_f80_A04
+# │       ├── state.zarr            shape (n_cells, n_features, n_timesteps)
+# │       └── phi.zarr              shape (n_timesteps,)
 # ├── valid
-# │   ├── sineSweep_A02
-# │   │   ├── initial_state.npz    shape (n_cells, n_features)
-# │   │   └── phi.npz              shape (n_timesteps,)
-# │   └── sineSweep_A04
-# │       ├── initial_state.npz    shape (n_cells, n_features)
-# │       └── phi.npz              shape (n_timesteps,)
+# │   ├── step_A03
+# │   │   ├── initial_state.zarr    shape (n_cells, n_features)
+# │   │   └── phi.zarr              shape (n_timesteps,)
+# │   └── sine_f40_A05
+# │       ├── initial_state.zarr    shape (n_cells, n_features)
+# │       └── phi.zarr              shape (n_timesteps,)
 # └── test
-#     ├── step_A03
-#     │   ├── initial_state.npz    shape (n_cells, n_features)
-#     │   └── phi.npz              shape (n_timesteps,)
 #     ├── step_A05
-#     │   ├── initial_state.npz    shape (n_cells, n_features)
-#     │   └── phi.npz              shape (n_timesteps,)
+#     │   ├── initial_state.zarr    shape (n_cells, n_features)
+#     │   └── phi.zarr              shape (n_timesteps,)
 #     ├── sine_f10_A03
-#     │   ├── initial_state.npz    shape (n_cells, n_features)
-#     │   └── phi.npz              shape (n_timesteps,)
+#     │   ├── initial_state.zarr    shape (n_cells, n_features)
+#     │   └── phi.zarr              shape (n_timesteps,)
 #     ├── sine_f10_A05
-#     │   ├── initial_state.npz    shape (n_cells, n_features)
-#     │   └── phi.npz              shape (n_timesteps,)
+#     │   ├── initial_state.zarr    shape (n_cells, n_features)
+#     │   └── phi.zarr              shape (n_timesteps,)
 #     ├── sine_f40_A03
-#     │   ├── initial_state.npz    shape (n_cells, n_features)
-#     │   └── phi.npz              shape (n_timesteps,)
+#     │   ├── initial_state.zarr    shape (n_cells, n_features)
+#     │   └── phi.zarr              shape (n_timesteps,)
 #     └── sine_f40_A05
-#         ├── initial_state.npz    shape (n_cells, n_features)
-#         └── phi.npz              shape (n_timesteps,)
-
+#         ├── initial_state.zarr    shape (n_cells, n_features)
+#         └── phi.zarr              shape (n_timesteps,)
 #
-# The train/ simulations contain the full ground-truth state. The valid/ and
-# test/ simulations contain ONLY the initial snapshot and the future forcing
-# signal: the ground truth is never exposed to the ingestion program, it
-# lives exclusively in reference_data/ and is read by the scoring program.
+# The train/ simulations contain the full ground-truth state (state.zarr).
+# The valid/ and test/ simulations contain ONLY the initial snapshot
+# (initial_state.zarr) and the future forcing signal (phi.zarr): the ground
+# truth is never exposed to the ingestion program, it lives exclusively in
+# reference_data/ and is read by the scoring program.
 #
 # Submitted model.py must define a class `model` with 3 methods:
 # 1. preprocess(self, data_folder) -> D
