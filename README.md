@@ -1,4 +1,4 @@
-# Data challenge on reduced-order modeling for dynamical reacting flows
+# CYPHER 2026: Hackathon on Reduced-Order Modeling for Advanced Combustion Systems
 Challenge on reduced-order modeling for dynamical reacting flows organised within the context of the [CYPHER COST Action](https://cypher.ulb.be/)
 <p align="center">
   <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/challenge_overview.png?raw=true" alt="Challenge Overview" width="90%">
