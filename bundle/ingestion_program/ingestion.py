@@ -10,7 +10,7 @@
 # Usage: python ingestion.py input_dir output_dir ingestion_program_dir submission_program_dir
 
 # AS A PARTICIPANT, DO NOT MODIFY THIS CODE.
-# This is the "ingestion program" written by the organizers (Tommaso Baffetti, Alberto Procacci, ULB, 2026).
+# This is the "ingestion program" written by the organizers.
 # It runs on the challenge platform for every submission.
 
 # ----------------------------------------------------------------------------
