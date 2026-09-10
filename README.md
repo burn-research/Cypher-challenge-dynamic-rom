@@ -1,7 +1,7 @@
 # Data challenge on reduced-order modeling for dynamical reacting flows
 Challenge on reduced-order modeling for dynamical reacting flows organised within the context of the [CYPHER COST Action](https://cypher.ulb.be/)
 <p align="center">
-  <img src="images/Challenge_overview_pic.png" alt="Challenge Overview" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/challenge_overview.png?raw=true" alt="Challenge Overview" width="90%">
 </p>
 
 ## Overview
