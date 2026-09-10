@@ -18,7 +18,7 @@ Participants will be asked to submit a Python code that defines the reduced-orde
 All the technical information can be found at https://cypher.ulb.be/data-challenge/
 
 ## Submission guidelines
-Participants can join the challenge through the link INSERT CORRECT LINK
+Participants can join the challenge through the link https://www.codabench.org/competitions/18039/
 The link will lead to the following page:
 
 <p align="center">
@@ -62,7 +62,7 @@ After being added to the leaderboard, the scoring should be visible in the resul
 ## Organizing committee
 
 <p align="center">
-  <img src="images/organizing_committee.png" alt="organizing committee" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/organizing.png?raw=true" alt="organizing committee" width="90%">
 </p>
 
 
