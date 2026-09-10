@@ -22,13 +22,13 @@ Participants can join the challenge through the link https://www.codabench.org/c
 The link will lead to the following page:
 
 <p align="center">
-  <img src="images/Submission_2.png" alt="homepage" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/main_page_codabench.png?raw=true" alt="homepage" width="90%">
 </p>
 
 After clicking on the highlighted "My Submissions" section, you will be able to submit your model:
 
 <p align="center">
-  <img src="images/submission.png" alt="homepage" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/submission_2.png?raw=true" alt="homepage" width="90%">
 </p>
 
 An example file for submission is the 'sample_code_submission.zip' in the present GitHub folder. The [uncompressed folder](sample_code_submission) allows for exploring the structure of the Python code to be submitted. The only mandatory file that must be present at the moment of submission is the 'model.py' file. Every other kind of module is allowed in the submission folder, but additional data or pretrained models are not allowed in the present context. The organizers of the challenge reserve the right to check the submission files to verify that those restrictions are respected.
@@ -43,19 +43,19 @@ The present method must return the sub-filter turbulent diffusivity of the progr
 After submitting the file, the platform will start processing the data. Loading the app may take a few minutes. After the backend is ready and the docker image is loaded, you should see an output similar to the one represented below. Successive submissions without refreshing the page should be faster than the initial one.
 
 <p align="center">
-  <img src="images/after_submission.png" alt="after submission" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/run.png?raw=true" alt="after submission" width="90%">
 </p>
 
 The window in red will output the statements from the backend. The model submitted can contain print statements that will be shown as output, which can be useful for debugging purposes. After the ingestion and scoring programs are done, you can click on the green highlighted button to download the outputs of the training, and check the log files with the output and errors, if any.
 
 When multiple submissions are presented, the best one (lower scoring) can manually be selected to be added to the leaderboard:
 <p align="center">
-  <img src="images/add_to_leaderboard.png" alt="leaderboard" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/add_leaderboard.png?raw=true" alt="leaderboard" width="90%">
 </p>
 
 After being added to the leaderboard, the scoring should be visible in the results section:
 <p align="center">
-  <img src="images/results.png" alt="results" width="90%">
+  <img src="https://github.com/burn-research/Cypher-challenge-dynamic-rom/blob/main/bundle/images/leaderboard.png?raw=true" alt="results" width="90%">
 </p>
 
 
