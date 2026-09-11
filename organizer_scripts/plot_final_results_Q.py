@@ -24,11 +24,11 @@ import matplotlib.pyplot as plt
 
 MODEL_NAMES = [
     #"sample",       # → ../bundle/sample_output_data/
-    "PCA-MLP",
-    "POD-ARX",
-    "OpInf",
-    "SINDy",
-    "PCA-DMDc",
+    "model1",
+    "model2",
+    "model3",
+    "model4",
+    "model5",
 ]
 
 SIM_NAME = "sine_f10_A05"   # always in the test split
