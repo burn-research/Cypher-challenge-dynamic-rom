@@ -24,11 +24,8 @@ import matplotlib.pyplot as plt
 
 MODEL_NAMES = [
     #"sample",       # → ../bundle/sample_output_data/
-    "model1",
-    "model2",
-    "model3",
-    "model4",
-    "model5",
+    "group_2",
+    "group_4",
 ]
 
 SIM_NAME = "sine_f10_A05"   # always in the test split
@@ -157,7 +154,7 @@ for model_name in MODEL_NAMES:
 
 fig, ax = plt.subplots(figsize=(10, 5))
 
-ax.plot(time_axis, Q_gt_int, color='black', linewidth=3,
+ax.plot(time_axis, Q_gt_int, color='black', linewidth=1.5,
         label='Ground truth', zorder=10)
 
 colors = plt.cm.tab10.colors   # up to 10 distinct colours
@@ -165,7 +162,7 @@ for idx, (model_name, Q_int) in enumerate(model_results.items()):
     t_plot = time_axis[:len(Q_int)]
     ax.plot(t_plot, Q_int,
             color=colors[idx % len(colors)],
-            linewidth=1.5,
+            linewidth=2.5,
             linestyle='-',
             label=model_name)
 
@@ -174,7 +171,7 @@ ax.set_ylabel('Integrated heat release Q  (J/s)', fontsize=12)
 ax.set_title(f'Integrated Q — {SIM_NAME}', fontsize=13)
 ax.legend(fontsize=11)
 ax.grid(True, alpha=0.5)
-plt.ylim((np.mean(Q_gt_int)-(np.max(Q_gt_int)-np.mean(Q_gt_int))*2.5, np.mean(Q_gt_int)+(np.max(Q_gt_int)-np.mean(Q_gt_int))*2.5))
+plt.ylim((np.mean(Q_gt_int)-(np.max(Q_gt_int)-np.mean(Q_gt_int))*1.3, np.mean(Q_gt_int)+(np.max(Q_gt_int)-np.mean(Q_gt_int))*1.3))
 fig.tight_layout()
 
 out_path = f"example_Q_comparison_{SIM_NAME}.png"
